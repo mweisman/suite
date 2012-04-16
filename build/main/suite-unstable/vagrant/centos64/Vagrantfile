@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant::Config.run do |config|
+  # Box name
+  config.vm.box = "og_centos564"
+
+  # The url from where the 'config.vm.box' box will be fetched if it
+  # doesn't already exist on the user's system.
+  # TODO: Find a place to keep the base boxes and set this
+  # config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+
+
+  # Pass 8888 on the host to 8080 on the vm for testing web-based stuff
+  config.vm.forward_port(8080, 8888)
+  # Pass PostgreSQL requests to the host into the vm for testing the db
+  config.vm.forward_port(5432, 5432)
+  
+  # Run a script at boot to setup OpenGeo repos and install the nightly build
+  config.vm.provision :shell, :path => "setup.sh"
+end
