@@ -18,7 +18,6 @@ public class LayerPage extends ResourceConfigurationPage {
         if (getLayerInfo().getId() == null) {
             //do not call super.doSave(), because this layer is not part of the catalog yet
 
-            
             onSuccessfulSave();
         }
         else {

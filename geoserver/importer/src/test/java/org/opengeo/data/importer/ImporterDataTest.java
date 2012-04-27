@@ -246,18 +246,18 @@ public class ImporterDataTest extends ImporterTestSupport {
         unpack("shape/bugsites_esri_prj.tar.gz", dir);
 
         ImportContext context = importer.createContext(new Directory(dir), ds);
-        assertEquals(2, context.getTasks().size());
+        assertEquals(1, context.getTasks().size());
 
-        assertEquals(1, context.getTasks().get(0).getItems().size());
-        assertEquals(1, context.getTasks().get(1).getItems().size());
+        assertEquals(2, context.getTasks().get(0).getItems().size());
+        //assertEquals(1, context.getTasks().get(1).getItems().size());
 
         assertEquals(ImportTask.State.READY, context.getTasks().get(0).getState());
-        assertEquals(ImportTask.State.READY, context.getTasks().get(1).getState());
+        //assertEquals(ImportTask.State.READY, context.getTasks().get(1).getState());
         
         ImportItem item1 = context.getTasks().get(0).getItems().get(0);
         assertEquals(ImportItem.State.READY, item1.getState());
         
-        ImportItem item2 = context.getTasks().get(1).getItems().get(0);
+        ImportItem item2 = context.getTasks().get(0).getItems().get(1);
         assertEquals(ImportItem.State.READY, item2.getState());
         
         // cannot ensure ordering of items
@@ -338,8 +338,8 @@ public class ImporterDataTest extends ImporterTestSupport {
         int bugsitesCount = fs.getCount(Query.ALL);
 
         ImportContext context = importer.createContext(new Directory(dir), ds);
-        context.getTasks().get(0).setUpdateMode(ImportTask.UpdateMode.REPLACE);
-        context.getTasks().get(1).setUpdateMode(ImportTask.UpdateMode.APPEND);
+        context.getTasks().get(0).getItems().get(0).setUpdateMode(UpdateMode.REPLACE);
+        context.getTasks().get(0).getItems().get(1).setUpdateMode(UpdateMode.APPEND);
         
         importer.run(context);
         

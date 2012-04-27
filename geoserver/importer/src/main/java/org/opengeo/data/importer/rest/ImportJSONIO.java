@@ -40,6 +40,7 @@ import org.opengeo.data.importer.ImportTask;
 import org.opengeo.data.importer.Importer;
 import org.opengeo.data.importer.SpatialFile;
 import org.opengeo.data.importer.Table;
+import org.opengeo.data.importer.UpdateMode;
 import org.opengeo.data.importer.transform.*;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
@@ -223,6 +224,10 @@ public class ImportJSONIO {
           .key("originalName").value(item.getOriginalName())
           .key("resource").value(toJSON(layer.getResource()))
           .key("layer").value(toJSON(layer));
+
+        if (item.getUpdateMode() != null) {
+            json.key("updateMode").value(item.getUpdateMode().name());
+        }
         if (item.getError() != null) {
             json.key("errorMessage").value(concatErrorMessages(item.getError()));
         }
@@ -305,7 +310,7 @@ public class ImportJSONIO {
                 task.setId(json.getInt("id"));
             }
             if (json.has("updateMode")) {
-                task.setUpdateMode(ImportTask.UpdateMode.valueOf(json.getString("updateMode").toUpperCase()));
+                task.setUpdateMode(UpdateMode.valueOf(json.getString("updateMode").toUpperCase()));
             }
             if (json.has("source")) {
                 JSONObject source = json.getJSONObject("source");
@@ -358,6 +363,10 @@ public class ImportJSONIO {
             importItem.setTransform(transformChain(json.getJSONObject("transformChain")));
         }
 
+        if (json.has("updateMode")) {
+            //importItem.setUpdateMode(updateMO)
+            importItem.setUpdateMode(UpdateMode.valueOf(json.getString("updateMode")));
+        }
         //parse the layer if specified
         return importItem;
     }
@@ -402,6 +411,7 @@ public class ImportJSONIO {
         }
         return transform;
     }
+
     
     public void data(ImportData data, PageInfo page, OutputStream out) throws IOException {
         data(data, page, builder(out));

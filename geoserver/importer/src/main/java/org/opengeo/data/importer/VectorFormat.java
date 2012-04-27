@@ -27,4 +27,5 @@ public abstract class VectorFormat extends DataFormat {
      * Get the number of features from the data for the specified import item.
      */
     public abstract int getFeatureCount(ImportData data, ImportItem item) throws IOException;
+
 }

@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import org.geoserver.catalog.LayerInfo;
+import org.geoserver.ows.util.OwsUtils;
 import org.opengeo.data.importer.transform.TransformChain;
 
 /**
@@ -69,6 +70,9 @@ public class ImportItem implements Serializable {
     transient volatile int numberProcessed;
     
     List<LogRecord> importMessages = new ArrayList<LogRecord>();
+
+    /** mode to use when importing into existing dataset */
+    UpdateMode updateMode;
 
     public ImportItem() {
     }
@@ -178,7 +182,28 @@ public class ImportItem implements Serializable {
     public void setTotalToProcess(int totalToProcess) {
         this.totalToProcess = totalToProcess;
     }
-    
+
+    public UpdateMode getUpdateMode() {
+        return updateMode;
+    }
+
+    public void setUpdateMode(UpdateMode updateMode) {
+        this.updateMode = updateMode;
+    }
+
+    public UpdateMode updateMode() {
+        return updateMode != null ? updateMode : task.getUpdateMode();
+    }
+
+    public void reattach() {
+        if (layer != null) {
+            OwsUtils.resolveCollections(layer);
+            if (layer.getResource() != null) {
+                OwsUtils.resolveCollections(layer.getResource());
+            }
+        }
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

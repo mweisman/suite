@@ -7,12 +7,17 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.behavior.SimpleAttributeModifier;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.link.ExternalLink;
 import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.repeater.DefaultItemReuseStrategy;
+import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.model.IChainingModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -25,6 +30,7 @@ import org.geoserver.web.wicket.CRSPanel;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerDialog.DialogDelegate;
+import org.geoserver.web.wicket.GeoServerDataProvider;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.Icon;
 import org.geoserver.web.wicket.SRSToCRSModel;
@@ -36,44 +42,25 @@ public class ImportItemTable extends GeoServerTablePanel<ImportItem> {
 
     GeoServerDialog dialog;
     
-    public ImportItemTable(String id, ImportItemProvider dataProvider, boolean selectable) {
+    public ImportItemTable(String id, GeoServerDataProvider<ImportItem> dataProvider, boolean selectable) {
         super(id, dataProvider, selectable);
-        add(dialog = new GeoServerDialog("dialog")); 
+        add(dialog = new GeoServerDialog("dialog"));
+
+        ((DataView)get("listContainer:items")).setItemReuseStrategy(DefaultItemReuseStrategy.getInstance());
     }
 
     @Override
     protected Component getComponentForProperty(String id, final IModel itemModel, Property property) {
-        //ImportItem item = (ImportItem) itemModel.getObject();
-        
         if (property == ImportItemProvider.NAME) {
               return new LayerLinkPanel(id, itemModel);
-            //PageParameters pageParams = new PageParameters();
-            //return new SimpleBookmarkableLink(id, ResourceConfigurationPage.class, 
-//                    property.getModel(itemModel), pageParams);
-            //return new Label(id, property.getModel(itemModel));
-            /*if (item.getS() == LayerStatus.COMPLETED) {
-                //link to the layer configuration page
-                LayerInfo layer = layerSummary.getLayer();
-                PageParameters pageParams = new PageParameters();
-                pageParams.put(ResourceConfigurationPage.WORKSPACE, 
-                    layer.getResource().getStore().getWorkspace().getName());
-                pageParams.put(ResourceConfigurationPage.NAME, layer.getResource().getName());
-                
-                return new SimpleBookmarkableLink(id, ResourceConfigurationPage.class, 
-                    property.getModel(itemModel), pageParams);
-            }
-            else {
-                return new Label(id, property.getModel(itemModel));
-            }*/
         }
-//        if (property == ImportItemProvider.FORMAT) {
-//            return new Label(id, new PropertyModel(property.getModel(itemModel), "name"));
-//        }
+
         if (property == ImportItemProvider.STATUS) {
             return new Icon(id, new StatusIconModel(property.getModel(itemModel)), 
                 new StatusDescriptionModel(property.getModel(itemModel)));
         }
         if (property == ImportItemProvider.ACTION) {
+            
             ImportItem.State state = (State) property.getModel(itemModel).getObject();
             switch(state) {
                 case COMPLETE:
@@ -89,76 +76,16 @@ public class ImportItemTable extends GeoServerTablePanel<ImportItem> {
                 default:
                     return new WebMarkupContainer(id);
             }
-            
-//            if (item.getState() == ImportItem.State.COMPLETE) {
-//                //link to map preview
-//                return new LayerPreviewPanel(id, itemModel);
-//            }
-//            else {
-//                //link to configuration
-//                return new Link(id) {
-//                    @Override
-//                    public void onClick() {
-//                        setResponsePage(new ResourceConfigurationPage(item.getLayer(), true));
-//                    }
-//                };
-//                return new SimpleAjaxLink(id, new Model("Fix...")) {
-//                    
-//                    @Override
-//                    protected void onClick(AjaxRequestTarget target) {
-//                        dialog.showOkCancel(target, new DialogDelegate() {
-//                            
-//                            @Override
-//                            protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
-//                                return true;
-//                            }
-//                            
-//                            @Override
-//                            protected Component getContents(String id) {
-//                                return new NoCRSPanel(id, new PropertyModel(layerSummary, "crs"));
-//                            }
-//                        });
-//                    }
-//                };
-
-//            if (layerSummary.getStatus() == LayerStatus.NO_FORMAT) {
-//                return new FormatPanel(id, new PropertyModel(layerSummary, "format")) {
-//                    @Override
-//                    protected void onApply(AjaxRequestTarget target) {
-//                        target.addComponent(ImportItemTable.this);
-//                    }
-//                };
-//            }
-//            if (layerSummary.getStatus() == LayerStatus.NO_CRS) {
-//                return new SimpleAjaxLink(id, new Model("Fix...")) {
-//                    
-//                    @Override
-//                    protected void onClick(AjaxRequestTarget target) {
-//                        dialog.showOkCancel(target, new DialogDelegate() {
-//                            
-//                            @Override
-//                            protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
-//                                return true;
-//                            }
-//                            
-//                            @Override
-//                            protected Component getContents(String id) {
-//                                return new NoCRSPanel(id, new PropertyModel(layerSummary, "crs"));
-//                            }
-//                        });
-//                    }
-//                };
-//            }
-//            
-//            if (layerSummary.getStatus() == LayerStatus.COMPLETED) {
-//                return new LayerPreviewPanel(id, layerSummary);
-//            }
-//            
-//            return new WebMarkupContainer(id);
         }
         return null;
     }
 
+    protected void onPopulateItem(Property<ImportItem> property, ListItem item) {
+        if (property == ImportItemProvider.ACTION) {
+            item.add(new AttributeAppender("style", new Model("width:100%;"), " "));
+        }
+    }
+    
     SimpleAjaxLink createFixCRSLink(String id, final IModel<ImportItem> itemModel) {
         return new SimpleAjaxLink(id, new Model("Fix...")) {
             @Override
@@ -324,6 +251,7 @@ public class ImportItemTable extends GeoServerTablePanel<ImportItem> {
                 @Override
                 protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                     ImporterWebUtils.importer().changed(model.getObject());
+                    //ImportItemTable.this.modelChanged();
                     target.addComponent(ImportItemTable.this);
                 }
             });

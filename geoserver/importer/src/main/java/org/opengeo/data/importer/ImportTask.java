@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.geoserver.catalog.StoreInfo;
+import org.geoserver.ows.util.OwsUtils;
 
 /**
  * A unit of work during an import.
@@ -19,10 +20,6 @@ public class ImportTask implements Serializable {
 
     public static enum State {
         PENDING, READY, RUNNING, INCOMPLETE, COMPLETE
-    }
-    
-    public static enum UpdateMode {
-        REPLACE, APPEND, UPDATE
     }
 
     /**
@@ -145,10 +142,16 @@ public class ImportTask implements Serializable {
         return null;
     }
 
+    /**
+     * @deprecated
+     */
     public UpdateMode getUpdateMode() {
         return updateMode;
     }
 
+    /**
+     * @deprecated
+     */
     public void setUpdateMode(UpdateMode updateMode) {
         this.updateMode = updateMode;
     }
@@ -171,6 +174,16 @@ public class ImportTask implements Serializable {
            }
         }
         state = newState;
+    }
+
+    public void reattach() {
+        if (getStore() != null) {
+            OwsUtils.resolveCollections(getStore());
+        }
+        for (ImportItem item : items) {
+            item.setTask(this);
+            item.reattach();
+        }
     }
 
     @Override
@@ -199,5 +212,12 @@ public class ImportTask implements Serializable {
         if (id != other.id)
             return false;
         return true;
+    }
+
+    private Object readResolve() {
+        if (items == null) {
+            items = new ArrayList();
+        }
+        return this;
     }
 }

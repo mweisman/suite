@@ -6,6 +6,7 @@ Welcome to the OpenGeo Suite!  The OpenGeo Suite is a full geospatial software s
 .. toctree::
    :maxdepth: 2
 
-   installation/index.rst
-   gettingstarted/index.rst
-   tutorials/index.rst
+   installation/index
+   gettingstarted/index
+   analytics/index
+   tutorials/index

@@ -68,4 +68,11 @@ public abstract class TransformChain<T extends ImportTransform> implements Seria
     
     public abstract void pre(ImportItem item, ImportData data) throws Exception;
     public abstract void post(ImportItem item, ImportData data) throws Exception;
+
+    private Object readResolve() {
+        if (transforms == null) {
+            transforms = new ArrayList();
+        }
+        return this;
+    }
 }

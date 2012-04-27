@@ -152,4 +152,9 @@ public class SpatialFile extends FileData {
             return false;
         return true;
     }
+
+    private Object readResolve() {
+        suppFiles = suppFiles == null ? new ArrayList<File>() : suppFiles;
+        return this;
+    }
 }

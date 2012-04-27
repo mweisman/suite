@@ -1,16 +1,23 @@
 package org.opengeo.data.importer.bdb;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.geoserver.catalog.LayerInfo;
+import org.opengeo.data.importer.DataStoreFormat;
 import org.opengeo.data.importer.ImportContext;
 import org.opengeo.data.importer.ImportItem;
 import org.opengeo.data.importer.ImportStore;
 import org.opengeo.data.importer.ImportTask;
 import org.opengeo.data.importer.Importer;
+import org.opengeo.data.importer.SpatialFile;
+import org.opengeo.data.importer.Table;
+import org.opengeo.data.importer.transform.VectorTransformChain;
 
+import com.sleepycat.bind.EntityBinding;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.serial.SerialBinding;
 import com.sleepycat.bind.serial.StoredClassCatalog;
@@ -29,12 +36,17 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Sequence;
 import com.sleepycat.je.SequenceConfig;
 import java.util.logging.Logger;
+import com.sleepycat.je.Transaction;
+import com.thoughtworks.xstream.XStream;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.iterators.FilterIterator;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.impl.StoreInfoImpl;
 import org.geotools.util.logging.Logging;
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.config.util.XStreamPersisterFactory;
 
 /**
  * Import store implementation based on Berkley DB Java Edition.
@@ -49,10 +61,8 @@ public class BDBImportStore implements ImportStore {
 
     Database db;
     Database seqDb;
-    Database classDb;
 
     Sequence importIdSeq;
-    StoredClassCatalog classCatalog;
     EntryBinding<ImportContext> importBinding;
 
     public BDBImportStore(Importer importer) {
@@ -87,31 +97,10 @@ public class BDBImportStore implements ImportStore {
         importIdSeq = 
             seqDb.openSequence(null, new DatabaseEntry("import_id".getBytes()), seqConfig);
         
-        classDb = env.openDatabase(null, "classes", dbConfig);
-        classCatalog = new StoredClassCatalog(classDb);
-        importBinding = new SerialBinding<ImportContext>(classCatalog, ImportContext.class);
-        
-        // check for potential class incompatibilities and attempt recovery
-        try {
-            iterator().next();
-        } catch (RuntimeException re) {
-            if (re.getCause() instanceof java.io.InvalidClassException) {
-                LOGGER.warning("Attempting database recovery related to class changes: " + re.getCause().getMessage());
-                // wipe out the catalog
-                classCatalog.close();
-                classDb.close();
-                env.removeDatabase(null, "classes");
-                // and the import db
-                db.close();
-                env.removeDatabase(null, "imports");
-                // reopen
-                db = env.openDatabase(null, "imports", dbConfig);
-                classDb = env.openDatabase(null, "classes", dbConfig);
-                classCatalog = new StoredClassCatalog(classDb);
-                importBinding = new SerialBinding<ImportContext>(classCatalog, ImportContext.class);
-            }
-        }
+        importBinding = new XStreamInfoSerialBinding<ImportContext>(
+            importer.createXSteamPersister(), ImportContext.class);
     }
+
 
     public ImportContext get(long id) {
         DatabaseEntry val = new DatabaseEntry();
@@ -121,14 +110,13 @@ public class BDBImportStore implements ImportStore {
         }
 
         ImportContext context = importBinding.entryToObject(val);
-
         return reattach(context);
     }
-    
-    
+
     ImportContext reattach(ImportContext context) {
         //reload store and workspace objects from catalog so they are "attached" with 
         // the proper references to the catalog initialized
+        context.reattach();
         Catalog catalog = importer.getCatalog();
         for (ImportTask task : context.getTasks()) {
             StoreInfo store = task.getStore();
@@ -143,8 +131,17 @@ public class BDBImportStore implements ImportStore {
                         l.setDefaultStyle(catalog.getStyle(l.getDefaultStyle().getId()));
                     }
                     if (l.getResource() != null) {
-                        l.getResource().setCatalog(catalog);
-                        ((StoreInfoImpl) l.getResource().getStore()).setCatalog(catalog);
+                        ResourceInfo r = l.getResource();
+                        r.setCatalog(catalog);
+
+                        if (r.getStore() == null) {
+                            r.setStore(store);
+                        }
+
+                        if (r.getStore().getCatalog() == null) {
+                            ((StoreInfoImpl) r.getStore()).setCatalog(catalog);
+                        }
+
                     }
                 }
             }
@@ -173,6 +170,31 @@ public class BDBImportStore implements ImportStore {
         db.delete(null, key(importContext) );
     }
 
+    public void removeAll() {
+
+        Transaction tx = db.getEnvironment().beginTransaction(null, null);
+        Cursor c  = db.openCursor(tx,null);
+
+        DatabaseEntry key = new DatabaseEntry();
+        DatabaseEntry val = new DatabaseEntry();
+
+        LongBinding keyBinding = new LongBinding();
+        List<Long> ids = new ArrayList();
+
+        OperationStatus op = null;
+        while((op  = c.getNext(key, val, LockMode.DEFAULT)) == OperationStatus.SUCCESS) {
+            ids.add(LongBinding.entryToLong(key));
+        }
+        c.close();
+
+        for (Long id : ids) {
+            keyBinding.objectToEntry(id, key);
+            db.delete(tx, key);
+        }
+
+        tx.commit();
+    }
+   
     public void save(ImportContext context) {
         dettach(context);
         if (context.getId() == null) {
@@ -256,7 +278,6 @@ public class BDBImportStore implements ImportStore {
     public void destroy() {
         //destroy the db environment
         Environment env = db.getEnvironment();
-        classDb.close();
         seqDb.close();
         db.close();
         env.close();

@@ -13,6 +13,10 @@ public class Table extends ImportData {
         this.db = db;
     }
 
+    public void setDatabase(Database db) {
+        this.db = db;
+    }
+
     public Database getDatabase() {
         return db;
     }

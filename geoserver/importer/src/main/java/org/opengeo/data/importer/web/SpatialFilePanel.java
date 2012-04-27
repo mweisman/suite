@@ -1,6 +1,7 @@
 package org.opengeo.data.importer.web;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -14,6 +15,7 @@ import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.ParamResourceModel;
 import org.geoserver.web.wicket.browser.GeoServerFileChooser;
 import org.opengeo.data.importer.Directory;
+import org.opengeo.data.importer.FileData;
 import org.opengeo.data.importer.ImportData;
 import org.opengeo.data.importer.SpatialFile;
 
@@ -39,12 +41,9 @@ public class SpatialFilePanel extends ImportSourcePanel {
         form.add(chooserButton(form));
     }
 
-    public ImportData createImportSource() {
+    public ImportData createImportSource() throws IOException {
         File file = new File(this.file);
-        if (file.isDirectory()) {
-            return new Directory(file);
-        }
-        return new SpatialFile(file); 
+        return FileData.createFromFile(file);
     };
     
     Component chooserButton(Form form) {

@@ -2,22 +2,45 @@ package org.opengeo.data.importer.web;
 
 import static org.opengeo.data.importer.web.ImporterWebUtils.importer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 
+import org.apache.wicket.Component;
+import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
+import org.apache.wicket.ResourceReference;
 import org.apache.wicket.ajax.AbstractAjaxTimerBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.LoadableDetachableModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
+import org.apache.wicket.model.StringResourceModel;
+import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.util.time.Duration;
+import org.geoserver.catalog.CoverageStoreInfo;
+import org.geoserver.catalog.DataStoreInfo;
+import org.geoserver.catalog.StoreInfo;
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.web.GeoServerBasePage;
 import org.geoserver.web.GeoServerSecuredPage;
+import org.geoserver.web.wicket.GeoServerDataProvider;
+import org.geoserver.web.wicket.GeoServerDialog;
+import org.geoserver.web.wicket.GeoServerDialog.DialogDelegate;
 import org.geoserver.web.wicket.Icon;
 import org.opengeo.data.importer.BasicImportFilter;
 import org.opengeo.data.importer.Database;
@@ -32,9 +55,8 @@ import org.opengeo.data.importer.VectorFormat;
 
 public class ImportPage extends GeoServerSecuredPage {
 
-    //GeoServerTablePanel<LayerSummary> layerTable; 
-    //AtomicBoolean job = new AtomicBoolean(false);
-    
+    GeoServerDialog dialog;
+
     public ImportPage(PageParameters pp) {
         this(new ImportContextModel(pp.getAsLong("id")));
     }
@@ -61,47 +83,126 @@ public class ImportPage extends GeoServerSecuredPage {
             }
         };
 
+        add(new AjaxLink("raw") {
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                dialog.setInitialHeight(500);
+                dialog.setInitialWidth(700);
+                dialog.showOkCancel(target, new DialogDelegate() {
+                    @Override
+                    protected Component getContents(String id) {
+                        XStreamPersister xp = importer().createXSteamPersister();
+                        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                        try {
+                            xp.save(model.getObject(), bout);
+                        } catch (IOException e) {
+                            bout = new ByteArrayOutputStream();
+                            LOGGER.log(Level.FINER, e.getMessage(), e);
+                            e.printStackTrace(new PrintWriter(bout));
+                        }
+
+                        return new TextAreaPanel(id, new Model(new String(bout.toByteArray())));
+                    }
+
+                    @Override
+                    protected boolean onSubmit(AjaxRequestTarget target,  Component contents) {
+                        return true;
+                    }
+                });
+            }
+        }.setVisible(ImporterWebUtils.isDevMode()));
+
         ImportContextTable headerTable = new ImportContextTable("header", provider);
         headerTable.setFilterable(false);
         headerTable.setPageable(false);
         add(headerTable);
 
-        ImportContext imp = model.getObject();
-        ListView<ImportTask> tasksView = new ListView<ImportTask>("tasks", new ImportTasksModel(imp)) {
+        final ImportContext imp = model.getObject();
+        ListView<ImportTask> tasksView = new ListView<ImportTask>("tasks", 
+            new FilteredImportTasksModel(new ImportTasksModel(imp), false)) {
+        //ListView<ImportTask> tasksView = new ListView<ImportTask>("tasks", new ImportTasksDetachableModel(imp)) {
             @Override
             protected void populateItem(final ListItem<ImportTask> item) {
                 IModel<ImportTask> model = item.getModel();
 
-                DataIcon icon = null;
-                ImportData data = item.getModelObject().getData();
-                if (data instanceof Directory) {
-                    icon = DataIcon.FOLDER;
-                }
-                else if (data instanceof FileData) {
-                    FileData df = (FileData) data;
-                    icon = df.getFormat() instanceof VectorFormat ? DataIcon.FILE_VECTOR : 
-                           df.getFormat() instanceof RasterFormat ? DataIcon.FILE_RASTER : DataIcon.FILE;
-                }
-                else if (data instanceof Database) {
-                    icon = DataIcon.DATABASE;
+                ImportTask task = item.getModelObject();
+                ImportData data = task.getData();
+
+                item.add(new Icon("icon",new DataIconModel(data)));
+                item.add(new Label("title", new DataTitleModel(task)));
+
+                StoreInfo store = task.getStore();
+                if (store != null) {
+                    String targetModelKey = null;
+                    switch(task.getState()) {
+                    case COMPLETE:
+                        targetModelKey = "importCompleted";
+                        break;
+                    default:
+                        targetModelKey = store.getId()==null?"importNewStore":"importExistingStore"; 
+                    }
+
+                    item.add(new Label("target",
+                        new StringResourceModel(targetModelKey, ImportPage.this, null)));
+                    item.add(new Link("targetLink") {
+                        @Override
+                        public void onClick() {
+                            GeoServerBasePage page = null;
+                            StoreInfo store = item.getModelObject().getStore();
+                            
+                            if (store instanceof DataStoreInfo) {
+                                page = new DataStoreEditPage((DataStoreInfo) store);
+                            }
+                            else if (store instanceof CoverageStoreInfo) {
+                                page = new CoverageStoreEditPage((CoverageStoreInfo)store);
+                            }
+                            if (page != null) {
+                                page.setReturnPage(ImportPage.this);
+                                setResponsePage(page);
+                            }
+                        }
+                    }.add(new Label("store", new PropertyModel(store, "name"))));
                 }
                 else {
-                    icon = DataIcon.VECTOR; //TODO: better default
+                    //dummy data
+                    item.add(new Label("target", "").setVisible(false));
+                    item.add(new Link("targetLink") {
+                        @Override
+                        public void onClick() {
+                        }
+                    }.add(new Label("name", "")).setVisible(false));
                 }
 
-                item.add(new Icon("icon", icon.getIcon()));
-                item.add(new Label("title", new PropertyModel(model, "data")));
-                
-                ImportItemProvider provider = new ImportItemProvider(item.getModelObject());
-                final ImportItemTable itemTable = new ImportItemTable("items", provider, true);
+                //ImportItemProvider provider = new ImportItemProvider(item.getModelObject());
+                GeoServerDataProvider<ImportItem> provider = new GeoServerDataProvider<ImportItem>() {
+
+                    @Override
+                    protected List<Property<ImportItem>> getProperties() {
+                        return new ImportItemProvider((IModel)null).getProperties();
+                    }
+
+                    @Override
+                    protected List<ImportItem> getItems() {
+                        return item.getModelObject().getItems();
+                    }
+                    
+                };
+
+                boolean selectable = task.getState() != ImportTask.State.COMPLETE;
+                final ImportItemTable itemTable = new ImportItemTable("items", provider, selectable) {
+                    @Override
+                    protected void onSelectionUpdate(AjaxRequestTarget target) {
+                        updateImportLink((AjaxLink) item.get("import"), this, target);
+                    }
+                };
                 item.add(itemTable);
                 
                 itemTable.setOutputMarkupId(true);
                 itemTable.setFilterable(false);
                 itemTable.setSortable(false);
-                doSelectReady(model.getObject(), itemTable, null);
-                
-                item.add(new AjaxLink("import") {
+                doSelectReady(task, itemTable, null);
+
+                final AjaxLink importLink = new AjaxLink("import") {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         ImportTask task = item.getModelObject();
@@ -137,13 +238,16 @@ public class ImportPage extends GeoServerSecuredPage {
                         setEnabled(false);
                         target.addComponent(this);
                     }
-                });
-                
+                };
+                importLink.setEnabled(false);
+                item.add(importLink);
+
                 item.add(new AjaxLink<ImportTask>("select-all", model) {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         itemTable.selectAll();
                         target.addComponent(itemTable);
+                        updateImportLink(importLink, itemTable, target);
                     }
                 });
                 item.add(new AjaxLink<ImportTask>("select-none", model) {
@@ -151,56 +255,47 @@ public class ImportPage extends GeoServerSecuredPage {
                     public void onClick(AjaxRequestTarget target) {
                         itemTable.clearSelection();
                         target.addComponent(itemTable);
+                        updateImportLink(importLink, itemTable, target);
                     }
                 });
                 item.add(new AjaxLink<ImportTask>("select-ready", model) {
                     @Override
                     public void onClick(AjaxRequestTarget target) {
                         doSelectReady(getModelObject(), itemTable, target);
+                        updateImportLink(importLink, itemTable, target);
                     }
                 });
             }
         };
         add(tasksView);
 
-//        LayerSummaryProvider provider = new LayerSummaryProvider(imp);
-//
-//        add(layerTable = new LayerSummaryTable("layers", provider, true));
-//        layerTable.setOutputMarkupId(true);
-//        layerTable.setFilterable(false);
-//        layerTable.setSortable(false);
-//        
-//        if (newImport) {
-//            //set up initial selections
-//            for (int i = 0; i < imp.getLayers().size(); i++) {
-//                LayerSummary l = imp.getLayers().get(i);
-//                if (l.getStatus() == LayerStatus.READY) {
-//                    layerTable.selectIndex(i);
-//                }
-//            }
-//        }
-//        else {
-//            //set selections based on what was selected before
-//            if (imp.getLayersToImport() != null) {
-//                for (int i = 0; i < imp.getLayers().size(); i++) {
-//                    LayerSummary l = imp.getLayers().get(i);
-//                    if (l.getStatus() == LayerStatus.COMPLETED) {
-//                        continue;
-//                    }
-//                    if (imp.getLayersToImport().contains(l)) {
-//                        layerTable.selectIndex(i);
-//                    }
-//                }
-//            }
-//        }
-//        
-//        if(!newImport) {
-//            //getFeedbackPanel().warn("This is an old import");
-//        }
-//            
+        ListView<ImportTask> emptyTasksView = new ListView<ImportTask>("emptyTasks", 
+                new FilteredImportTasksModel(new ImportTasksModel(imp), true)) {
+            @Override
+            protected void populateItem(ListItem<ImportTask> item) {
+                item.add(new Label("title", new DataTitleModel(item.getModelObject())));
+            }
+        };
+        add(emptyTasksView);
+
+        add(dialog = new GeoServerDialog("dialog"));
+
     }
 
-    
+    void updateImportLink(AjaxLink link, ImportItemTable table, AjaxRequestTarget target) {
+        boolean enable = !table.getSelection().isEmpty();
+        if (enable) {
+            boolean allComplete = true;
+            for (ImportItem item : table.getSelection()) {
+                allComplete = item.getState() == ImportItem.State.COMPLETE;
+            }
+            enable = !allComplete;
+        }
+        
+        link.setEnabled(enable);
+        target.addComponent(link);
+    }
+
     void doSelectReady(ImportTask task, ImportItemTable table, AjaxRequestTarget target) {
         for (ImportItem item : task.getItems()) {
             if (item.getState() == ImportItem.State.READY) {
@@ -217,47 +312,102 @@ public class ImportPage extends GeoServerSecuredPage {
         return null;
     }
 
-//    class ImportTaskPanel extends Panel {
-//
-//        //TODO: use a model
-//        ImportTask task;
-//        ImportItemTable itemTable;
-//
-//        public ImportTaskPanel(String id, ImportTask task) {
-//            this(id, new ImportTaskModel(task));
-//        }
-//
-//        public ImportTaskPanel(String id, IModel<ImportTask> task) {
-//            super(id);
-//
-//            DataIcon icon = null;
-//            ImportData data = task.getObject().getData();
-//            if (data instanceof Directory) {
-//                icon = DataIcon.FOLDER;
-//            }
-//            else if (data instanceof FileData) {
-//                FileData df = (FileData) data;
-//                icon = df.getFormat() instanceof VectorFormat ? DataIcon.FILE_VECTOR : 
-//                       df.getFormat() instanceof RasterFormat ? DataIcon.FILE_RASTER : DataIcon.FILE;
-//            }
-//            else if (data instanceof Database) {
-//                icon = DataIcon.DATABASE;
-//            }
-//            else {
-//                icon = DataIcon.VECTOR; //TODO: better default
-//            }
-//            add(new Icon("icon", icon.getIcon()));
-//            add(new Label("title", new PropertyModel(task, "data")));
-//
-//            ImportItemProvider provider = new ImportItemProvider(task);
-//
-//            add(itemTable = new ImportItemTable("items", provider, true));
-//            itemTable.setOutputMarkupId(true);
-//            itemTable.setFilterable(false);
-//            itemTable.setSortable(false);
-//
-//            
-//
-//        }
-//    }
+    static class DataIconModel extends LoadableDetachableModel<ResourceReference> {
+
+        ImportData data;
+
+        public DataIconModel(ImportData data) {
+            this.data = data;
+        }
+
+        @Override
+        protected ResourceReference load() {
+            DataIcon icon = null;
+            if (data instanceof FileData) {
+                FileData df = (FileData) data;
+                if (data instanceof Directory) {
+                    icon = DataIcon.FOLDER;
+                }
+                else {
+                    icon = df.getFormat() instanceof VectorFormat ? DataIcon.FILE_VECTOR : 
+                           df.getFormat() instanceof RasterFormat ? DataIcon.FILE_RASTER : DataIcon.FILE;
+                }
+            }
+            else if (data instanceof Database) {
+                icon = DataIcon.DATABASE;
+            }
+            else {
+                icon = DataIcon.VECTOR; //TODO: better default
+            }
+            return icon.getIcon();
+        }
+    
+    }
+
+    static class DataTitleModel extends LoadableDetachableModel<String> {
+
+        ImportTask task;
+
+        DataTitleModel(ImportTask task) {
+            this.task = task;
+        }
+
+        @Override
+        protected String load() {
+            ImportData data = task.getData();
+
+            if (data instanceof FileData) {
+                FileData df = (FileData) data;
+                ImportData parentData = task.getContext().getData();
+                if (parentData instanceof Directory) {
+                    try {
+                        return df.relativePath((Directory) parentData);
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, e.getMessage(), e);
+                    }
+                }
+            }
+            return data.toString();
+        }
+    
+    }
+
+    static class TextAreaPanel extends Panel {
+
+        public TextAreaPanel(String id, IModel textAreaModel) {
+            super(id);
+            
+            add(new TextArea("textArea", textAreaModel));
+        }
+    
+    }
+
+    static class FilteredImportTasksModel extends ListModel<ImportTask> {
+
+        IModel<List<ImportTask>> taskModel;
+        boolean empty;
+
+        FilteredImportTasksModel(IModel<List<ImportTask>> taskModel, boolean empty) {
+            this.taskModel = taskModel;
+            this.empty = empty;
+        }
+
+        @Override
+        public List<ImportTask> getObject() {
+            List<ImportTask> tasks = new ArrayList();
+            for (ImportTask task : taskModel.getObject()) {
+                if (empty != task.getItems().isEmpty()) {
+                    continue;
+                }
+                tasks.add(task);
+            }
+            return tasks;
+        }
+    
+        @Override
+        public void detach() {
+            super.detach();
+            taskModel.detach();
+        }
+    }
 }

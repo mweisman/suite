@@ -74,4 +74,7 @@ public abstract class ImportData implements Serializable{
         }
     
     }
+
+    public void reattach() {
+    }
 }

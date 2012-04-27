@@ -2,6 +2,7 @@
 
 gs15data="/opt/opengeo/suite/data_dir/"
 gssave=/tmp/opengeo_data_dir.sav
+gswebapps=/opt/opengeo/suite/webapps
 
 #
 # Unpack any backed up geoserver data
@@ -21,3 +22,8 @@ if [ -d $gssave ]; then
   chgrp -R admin $gs15data 
 
 fi
+
+#
+# Fix permissions for the Jetty webapps folder
+#
+chmod g+wx "$gswebapps"

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<assembly>
+    <id>sdk</id>
+    <baseDirectory>opengeosuite-${project.version}-sdk</baseDirectory>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>sdk/target/sdk</directory>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

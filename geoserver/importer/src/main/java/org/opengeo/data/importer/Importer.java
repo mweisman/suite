@@ -1,5 +1,6 @@
 package org.opengeo.data.importer;
 
+import com.thoughtworks.xstream.XStream;
 import com.vividsolutions.jts.geom.Geometry;
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.logging.Logger;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.CoverageInfo;
+import org.geoserver.catalog.CoverageStoreInfo;
 import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
@@ -27,6 +29,9 @@ import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.config.util.XStreamPersister.CRSConverter;
+import org.geoserver.config.util.XStreamPersisterFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureReader;
@@ -34,16 +39,19 @@ import org.geotools.data.FeatureStore;
 import org.geotools.data.FeatureWriter;
 import org.geotools.data.Transaction;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.logging.Logging;
 import org.opengeo.data.importer.ImportTask.State;
 import org.opengeo.data.importer.bdb.BDBImportStore;
 import org.opengeo.data.importer.transform.RasterTransformChain;
+import org.opengeo.data.importer.transform.ReprojectTransform;
 import org.opengeo.data.importer.transform.TransformChain;
 import org.opengeo.data.importer.transform.VectorTransformChain;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
+
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 import org.springframework.beans.factory.DisposableBean;
@@ -78,7 +86,11 @@ public class Importer implements InitializingBean, DisposableBean {
         this.contextStore = new BDBImportStore(this);
         this.styleGen = new StyleGenerator(catalog);
     }
-    
+
+    public ImportStore getStore() {
+        return contextStore;
+    }
+
     public ImportItem getCurrentlyProcessingItem(long contextId) {
         return currentlyProcessing.get(new Long(contextId));
     }
@@ -137,6 +149,7 @@ public class Importer implements InitializingBean, DisposableBean {
         contextStore.add(context);
         return context;
     }
+
     public ImportContext init(ImportContext context) throws IOException {
         ImportData data = context.getData();
         if (data == null) {
@@ -153,21 +166,22 @@ public class Importer implements InitializingBean, DisposableBean {
                     //ignore empty directories
                     if (dir.getFiles().isEmpty()) continue;
 
-                    // if no target store specified group the directory into pieces that can be 
-                    // processed as a single tasl
-                    if (targetStore == null) {
-                        //group the contents of the directory by format
-                        Map<DataFormat,List<FileData>> map = new HashMap<DataFormat,List<FileData>>();
-                        for (FileData f : dir.getFiles()) {
-                            DataFormat format = f.getFormat();
-                            List<FileData> files = map.get(format);
-                            if (files == null) {
-                                files = new ArrayList<FileData>();
-                                map.put(format, files);
-                            }
-                            files.add(f);
+                    //group the contents of the directory by format
+                    Map<DataFormat,List<FileData>> map = new HashMap<DataFormat,List<FileData>>();
+                    for (FileData f : dir.getFiles()) {
+                        DataFormat format = f.getFormat();
+                        List<FileData> files = map.get(format);
+                        if (files == null) {
+                            files = new ArrayList<FileData>();
+                            map.put(format, files);
                         }
-    
+                        files.add(f);
+                    }
+
+                    // if no target store specified group the directory into pieces that can be 
+                    // processed as a single task
+                    if (targetStore == null) {
+
                         //create a task for each "format" if that format can handle a directory
                         for (DataFormat format: new ArrayList<DataFormat>(map.keySet())) {
                             if (format != null && format.canRead(dir)) {
@@ -193,10 +207,19 @@ public class Importer implements InitializingBean, DisposableBean {
 
                     }
                     else {
-                        for (FileData file : dir.getFiles()) {
-                            createTask(file, context, targetStore);
+                        for (DataFormat format: new ArrayList<DataFormat>(map.keySet())) {
+                            List<FileData> files = map.get(format);
+                            if (files.size() == 1) {
+                                //use the file directly
+                                createTask(files.get(0), context, targetStore);
+                            }
+                            else {
+                                createTask(dir.filter(files), context, targetStore);
+                            }
                         }
-
+                        //for (FileData file : dir.getFiles()) {
+                        //    createTask(file, context, targetStore);
+                        //}
                     }
                 }
             }
@@ -268,6 +291,15 @@ public class Importer implements InitializingBean, DisposableBean {
                 // @todo revisit - thought this was needed or shapefile errors were occuring
                 task.setDirect(true);
                 task.setStore(store);
+            }
+            else {
+                //check for a mismatch between store and format
+                if ((format instanceof GridFormat && task.getStore() instanceof DataStoreInfo) || 
+                    (format instanceof VectorFormat && task.getStore() instanceof CoverageStoreInfo)) {
+                    task.setStore(null);
+                    task.setState(State.INCOMPLETE);
+                    continue;
+                }
             }
 
             if (task.getItems().isEmpty()) {
@@ -461,7 +493,19 @@ public class Importer implements InitializingBean, DisposableBean {
 
         //add the store, may have been added in a previous iteration of this task
         if (task.getStore().getId() == null) {
-            task.getStore().setName(findUniqueStoreName(task.getStore()));
+            StoreInfo store = task.getStore();
+
+            //ensure a unique name
+            store.setName(findUniqueStoreName(task.getStore()));
+            
+            //ensure a namespace connection parameter set matching workspace/namespace
+            if (!store.getConnectionParameters().containsKey("namespace")) {
+                WorkspaceInfo ws = task.getContext().getTargetWorkspace();
+                NamespaceInfo ns = catalog.getNamespaceByPrefix(ws.getName());
+                if (ns != null) {
+                    store.getConnectionParameters().put("namespace", ns.getURI());
+                }
+            }
             catalog.add(task.getStore());
         }
 
@@ -526,7 +570,10 @@ public class Importer implements InitializingBean, DisposableBean {
                 try {
                     currentlyProcessing.put(task.getContext().getId(), item);
                     loadIntoDataStore(item, (DataStoreInfo)task.getStore(), (VectorFormat) format, (VectorTransformChain) tx);
-                    if (task.getUpdateMode() == null) {
+
+                    //JD: not sure what the rationale is here... ask IS
+                    //if (task.getUpdateMode() == null) {
+                    if (item.updateMode() == null) {
                         addToCatalog(item, task);
                     }
                 }
@@ -585,7 +632,7 @@ public class Importer implements InitializingBean, DisposableBean {
         DataStore dataStore = (DataStore) store.getDataStore(null);
         String featureTypeName = featureType.getName().getLocalPart();
 
-        ImportTask.UpdateMode updateMode = item.getTask().getUpdateMode();
+        UpdateMode updateMode = item.updateMode();
         
         if (updateMode == null) {
             //find a unique type name in the target store
@@ -621,14 +668,14 @@ public class Importer implements InitializingBean, DisposableBean {
             // @todo what to do if featureType transform is present?
             
             // @todo implement me - need to specify attribute used for id
-            if (updateMode == ImportTask.UpdateMode.UPDATE) {
+            if (updateMode == UpdateMode.UPDATE) {
                 throw new UnsupportedOperationException("updateMode UPDATE is not supported yet");
             }
         }
             
         Transaction transaction = new DefaultTransaction();
         
-        if (updateMode == ImportTask.UpdateMode.REPLACE) {
+        if (updateMode == UpdateMode.REPLACE) {
             
             FeatureStore fs = (FeatureStore) dataStore.getFeatureSource(featureTypeName);
             fs.setTransaction(transaction);
@@ -879,4 +926,42 @@ public class Importer implements InitializingBean, DisposableBean {
             LOGGER.warning("Unable to dropSchema " + featureTypeName + " as it does not appear to exist in dataStore");
         }
     }
+
+    public XStreamPersister createXSteamPersister() {
+        XStreamPersister xp = new XStreamPersisterFactory().createXMLPersister();
+        xp.setEncodeByReference();
+        xp.setCatalog(catalog);
+
+        XStream xs = xp.getXStream();
+
+        //ImportContext
+        xs.alias("import", ImportContext.class);
+
+        //ImportTask
+        xs.alias("task", ImportTask.class);
+        xs.omitField(ImportTask.class, "context");
+
+        //ImportItem
+        xs.alias("item", ImportItem.class);
+        xs.omitField(ImportItem.class, "task");
+
+        //DataFormat
+        xs.alias("dataStoreFormat", DataStoreFormat.class);
+
+        //ImportData
+        xs.alias("spatialFile", SpatialFile.class);
+        xs.alias("database", org.opengeo.data.importer.Database.class);
+        xs.alias("table", Table.class);
+        xs.omitField(Table.class, "db");
+
+        xs.alias("vectorTransformChain", VectorTransformChain.class);
+        xs.registerLocalConverter(ReprojectTransform.class, "source", new CRSConverter());
+        xs.registerLocalConverter(ReprojectTransform.class, "target", new CRSConverter());
+
+        xs.registerLocalConverter( ReferencedEnvelope.class, "crs", new CRSConverter() );
+        xs.registerLocalConverter( GeneralEnvelope.class, "crs", new CRSConverter() );
+        
+        return xp;
+    }
+
 }

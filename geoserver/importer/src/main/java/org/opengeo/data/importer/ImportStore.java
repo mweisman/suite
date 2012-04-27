@@ -24,6 +24,8 @@ public interface ImportStore {
 
     void remove(ImportContext importContext);
 
+    void removeAll();
+
     Iterator<ImportContext> iterator();
 
     Iterator<ImportContext> allNonCompleteImports();

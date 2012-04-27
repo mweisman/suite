@@ -2,6 +2,7 @@ package org.opengeo.data.importer;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -55,6 +56,19 @@ public class ImporterTestSupport extends GeoServerTestSupport {
 
     protected File unpack(String path, File dir) throws Exception {
         
+        File file = file(path, dir);
+        
+        new VFSWorker().extractTo(file, dir);
+        file.delete();
+        
+        return dir;
+    }
+
+    protected File file(String path) throws Exception {
+        return file(path, tmpDir());
+    }
+
+    protected File file(String path, File dir) throws IOException {
         String filename = new File(path).getName();
         InputStream in = ImporterTestSupport.class.getResourceAsStream("../test-data/" + path);
         
@@ -65,11 +79,8 @@ public class ImporterTestSupport extends GeoServerTestSupport {
         in.close();
         out.flush();
         out.close();
-        
-        new VFSWorker().extractTo(file, dir);
-        file.delete();
-        
-        return dir;
+
+        return file;
     }
 
     protected void runChecks(String layerName) throws Exception {

@@ -158,6 +158,10 @@ public class ItemResource extends AbstractResource {
             }
         }
         
+        if (item.getUpdateMode() != null) {
+            orig.setUpdateMode(item.getUpdateMode());
+        }
+
         if (chain != null) {
             orig.setTransform(chain);
         }

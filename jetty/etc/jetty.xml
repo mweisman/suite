@@ -111,29 +111,65 @@
     -->
 
     <!-- =========================================================== -->
-    <!-- Discover contexts from webapps directory                    -->
+    <!-- Configure the context deployer                              -->
+    <!-- A context deployer will deploy contexts described in        -->
+    <!-- configuration files discovered in a directory.              -->
+    <!-- The configuration directory can be scanned for hot          -->
+    <!-- deployments at the configured scanInterval.                 -->
+    <!--                                                             -->
+    <!-- This deployer is configured to deploy contexts configured   -->
+    <!-- in the $JETTY_HOME/contexts directory                       -->
+    <!--                                                             -->
     <!-- =========================================================== -->
-    <Call class="org.mortbay.jetty.webapp.WebAppContext" name="addWebApplications">
-      <Arg><Ref id="contexts"/></Arg>
-      <Arg><SystemProperty name="jetty.home" default="."/>/webapps</Arg>
-      <Arg><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Arg>
-      <Arg type="boolean">True</Arg>  <!-- extract -->
-      <Arg type="boolean">True</Arg> <!-- parent priority class loading -->
+    <Call name="addLifeCycle">
+      <Arg>
+        <New class="org.mortbay.jetty.deployer.ContextDeployer">
+          <Set name="contexts"><Ref id="contexts"/></Set>
+          <Set name="configurationDir"><SystemProperty name="jetty.home" default="."/>/contexts</Set>
+          <Set name="scanInterval">1</Set>
+        </New>
+      </Arg>
     </Call>
 
     <!-- =========================================================== -->
+    <!-- Configure the webapp deployer.                              -->
+    <!-- A webapp  deployer will deploy standard webapps discovered  -->
+    <!-- in a directory at startup, without the need for additional  -->
+    <!-- configuration files.    It does not support hot deploy or   -->
+    <!-- non standard contexts (see ContextDeployer above).          -->
+    <!--                                                             -->
+    <!-- This deployer is configured to deploy webapps from the      -->
+    <!-- $JETTY_HOME/webapps directory                               -->
+    <!--                                                             -->
+    <!-- Normally only one type of deployer need be used.            -->
+    <!--                                                             -->
+    <!-- =========================================================== -->
+    <Call name="addLifeCycle">
+      <Arg>
+        <New class="org.mortbay.jetty.deployer.WebAppDeployer">
+          <Set name="contexts"><Ref id="contexts"/></Set>
+          <Set name="webAppDir"><SystemProperty name="jetty.home" default="."/>/webapps</Set>
+	  <Set name="parentLoaderPriority">true</Set>
+	  <Set name="extract">true</Set>
+	  <Set name="allowDuplicates">false</Set>
+          <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+        </New>
+      </Arg>
+    </Call>
+        
+    <!-- =========================================================== -->
     <!-- Configure Realms                                            -->
     <!-- =========================================================== -->
-    <!--Set name="UserRealms">
+    <Set name="UserRealms">
       <Array type="org.mortbay.jetty.security.UserRealm">
         <Item>
           <New class="org.mortbay.jetty.security.HashUserRealm">
-            <Set name="name">Test Realm</Set>
+            <Set name="name">Deployer Realm</Set>
             <Set name="config"><SystemProperty name="jetty.home" default="."/>/etc/realm.properties</Set>
           </New>
         </Item>
       </Array>
-    </Set-->
+    </Set>
     
 
     <!-- =========================================================== -->

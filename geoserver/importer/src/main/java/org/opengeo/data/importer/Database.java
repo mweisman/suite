@@ -94,4 +94,11 @@ public class Database extends ImportData {
         sb.append(getName());
         return sb.toString();
     }
+
+    @Override
+    public void reattach() {
+        for (Table t : tables) {
+            t.setDatabase(this);
+        }
+    }
 }

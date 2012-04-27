@@ -45,4 +45,15 @@ public class ImporterTest extends ImporterTestSupport {
         files.add(context.getTasks().get(1).getData());        
         assertTrue(files.containsAll(d.getFiles()));
     }
+
+    public void testCreateContextFromArchive() throws Exception {
+        File file = file("shape/archsites_epsg_prj.zip");
+        Archive arch = new Archive(file);
+        
+        ImportContext context = importer.createContext(arch);
+        assertEquals(1, context.getTasks().size());
+
+        assertEquals(1, context.getTasks().get(0).getItems().size());
+       
+    }
 }

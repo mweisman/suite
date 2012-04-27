@@ -4,6 +4,7 @@ import java.io.File;
 
 import java.io.IOException;
 import org.apache.commons.io.FilenameUtils;
+import org.geoserver.ows.util.ResponseUtils;
 
 public class FileData extends ImportData {
 
@@ -17,6 +18,17 @@ public class FileData extends ImportData {
         this.file = file;
     }
 
+    public static FileData createFromFile(File file) throws IOException {
+        if (file.isDirectory()) {
+            return new Directory(file);
+        }
+
+        if (new VFSWorker().canHandle(file)) {
+            return new Archive(file);
+        }
+
+        return new SpatialFile(file);
+    }
     public File getFile() {
         return file;
     }
@@ -34,7 +46,19 @@ public class FileData extends ImportData {
             }
         }
     }
-    
+
+    public String relativePath(Directory dir) throws IOException {
+        String dp = dir.getFile().getCanonicalPath();
+        String fp = getFile().getCanonicalPath();
+
+        if (fp.startsWith(dp)) {
+            String left = fp.substring(dp.length());
+            return ResponseUtils.appendPath(dir.getFile().getName(), left);
+            //return  + File.separator + left;
+        }
+        return null;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

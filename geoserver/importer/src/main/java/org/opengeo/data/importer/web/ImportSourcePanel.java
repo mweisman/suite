@@ -1,5 +1,7 @@
 package org.opengeo.data.importer.web;
 
+import java.io.IOException;
+
 import org.apache.wicket.markup.html.panel.Panel;
 import org.opengeo.data.importer.ImportData;
 
@@ -12,6 +14,6 @@ public abstract class ImportSourcePanel extends Panel {
         super(id);
     }
 
-    public abstract ImportData createImportSource();
+    public abstract ImportData createImportSource() throws IOException;
 
 }

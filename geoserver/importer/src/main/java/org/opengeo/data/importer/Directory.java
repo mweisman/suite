@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.io.FilenameUtils;
 import org.geoserver.data.util.IOUtils;
 import org.geotools.util.logging.Logging;
 import org.h2.store.fs.FileObjectOutputStream;
@@ -35,6 +36,17 @@ public class Directory extends FileData {
         File directory = File.createTempFile("tmp", "", parent);
         if (!directory.delete() || !directory.mkdir()) throw new IOException("Error creating temp directory at " + directory.getAbsolutePath());
         return new Directory(directory);
+    }
+
+    public static Directory createFromArchive(File archive) throws IOException {
+        VFSWorker vfs = new VFSWorker();
+        if (!vfs.canHandle(archive)) {
+            throw new IOException(archive.getPath() + " is not a recognizable  format");
+        }
+
+        File dir = new File(archive.getParentFile(), FilenameUtils.getBaseName(archive.getName()));
+        vfs.extractTo(archive, dir);
+        return new Directory(dir);
     }
 
     public File getFile() {

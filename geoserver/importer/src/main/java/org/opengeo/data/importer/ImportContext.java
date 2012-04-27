@@ -184,6 +184,16 @@ public class ImportContext implements Serializable {
         }
     }
 
+    public void reattach() {
+        if (data != null) {
+            data.reattach();
+        }
+
+        for (ImportTask task : tasks) {
+            task.setContext(this);
+            task.reattach();
+        }
+    }
 
     @Override
     public int hashCode() {
@@ -208,6 +218,13 @@ public class ImportContext implements Serializable {
         } else if (!id.equals(other.id))
             return false;
         return true;
+    }
+
+    private Object readResolve() {
+        if (tasks == null) {
+            tasks = new ArrayList();
+        }
+        return this;
     }
 }
     

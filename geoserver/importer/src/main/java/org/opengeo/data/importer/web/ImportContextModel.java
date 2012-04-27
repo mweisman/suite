@@ -1,9 +1,15 @@
 package org.opengeo.data.importer.web;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.wicket.model.LoadableDetachableModel;
+import org.geotools.util.logging.Logging;
 import org.opengeo.data.importer.ImportContext;
 
 public class ImportContextModel extends LoadableDetachableModel<ImportContext> {
+
+    static Logger LOGGER = Logging.getLogger(ImportContextModel.class);
 
     long id;
     
@@ -17,8 +23,12 @@ public class ImportContextModel extends LoadableDetachableModel<ImportContext> {
     
     @Override
     protected ImportContext load() {
-        return ImporterWebUtils.importer().getContext(id);
+        try {
+            return ImporterWebUtils.importer().getContext(id);
+        }
+        catch(Exception e) {
+            LOGGER.log(Level.WARNING, "Unable to load import " + id, e);
+            return null;
+        }
     }
-
-
 }

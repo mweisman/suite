@@ -34,8 +34,6 @@ import org.opengeo.data.importer.transform.NumberFormatTransform;
 import org.opengeo.data.importer.transform.ReprojectTransform;
 import org.opengeo.data.importer.transform.TransformChain;
 
-import com.ibm.icu.text.DateFormat;
-
 public class ImportItemAdvancedPage extends GeoServerSecuredPage {
 
     CheckBox reprojectCheckBox;
