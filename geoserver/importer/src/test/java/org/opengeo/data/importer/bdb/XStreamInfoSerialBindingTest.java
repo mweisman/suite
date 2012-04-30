@@ -25,7 +25,7 @@ public class XStreamInfoSerialBindingTest extends ImporterTestSupport {
         File dir = unpack("shape/archsites_epsg_prj.zip");
         ImportContext context = importer.createContext(new Directory(dir));
 
-        XStreamPersister xp = importer.createXSteamPersister();
+        XStreamPersister xp = importer.createXStreamPersister();
         XStreamInfoSerialBinding<ImportContext> binding = 
                 new XStreamInfoSerialBinding<ImportContext>(xp, ImportContext.class);
         binding.setCompress(false);

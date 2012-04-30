@@ -21,6 +21,9 @@ import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.Properties;
 import javax.servlet.Filter;
+
+import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.data.test.MockData;
 import org.geoserver.platform.GeoServerExtensions;
 import org.restlet.data.MediaType;
@@ -115,6 +118,72 @@ public class RESTDataTest extends ImporterTestSupport {
         runChecks("archsites");
     }
 
+    public void testSingleFileUploadIntoDb() throws Exception {
+        DataStoreInfo acme = createH2DataStore("sf", "acme");
+
+        String json = 
+            "{" + 
+                "\"import\": { " + 
+                    "\"targetWorkspace\": {" +
+                       "\"workspace\": {" + 
+                           "\"name\": \"sf\"" + 
+                       "}" + 
+                    "}," +
+                    "\"targetStore\": {" +
+                        "\"dataStore\": {" + 
+                            "\"name\": \"acme\"" + 
+                        "}" + 
+                     "}" +
+                "}" + 
+            "}";
+        int i = postNewImport(json);
+        int t = postNewTaskAsMultiPartForm(i, "shape/archsites_epsg_prj.zip");
+
+        JSONObject task = getTask(i, t);
+        assertEquals("READY", task.getString("state"));
+
+        Catalog cat = importer.getCatalog();
+        assertTrue(cat.getFeatureTypesByDataStore(acme).isEmpty());
+
+        postImport(i);
+
+        assertEquals(1, cat.getFeatureTypesByDataStore(acme).size());
+        assertNotNull(cat.getFeatureTypeByStore(acme, "archsites"));
+        runChecks("sf:archsites");
+    }
+
+    public void testSingleFileUploadIntoDb2() throws Exception {
+        DataStoreInfo acme = createH2DataStore("sf", "acme");
+
+        String json = 
+            "{" + 
+                "\"import\": { " + 
+                    "\"targetStore\": {" +
+                        "\"dataStore\": {" + 
+                            "\"name\": \"acme\", " +
+                            "\"workspace\": {" + 
+                                "\"name\": \"sf\"" + 
+                            "}" + 
+                        "}" + 
+                     "}" +
+                "}" + 
+            "}";
+        int i = postNewImport(json);
+        int t = postNewTaskAsMultiPartForm(i, "shape/archsites_epsg_prj.zip");
+
+        JSONObject task = getTask(i, t);
+        assertEquals("READY", task.getString("state"));
+
+        Catalog cat = importer.getCatalog();
+        assertTrue(cat.getFeatureTypesByDataStore(acme).isEmpty());
+
+        postImport(i);
+
+        assertEquals(1, cat.getFeatureTypesByDataStore(acme).size());
+        assertNotNull(cat.getFeatureTypeByStore(acme, "archsites"));
+        runChecks("sf:archsites");
+    }
+
     JSONObject getTask(int imp, int task) throws Exception {
         JSON json = getAsJSON(String.format("/rest/imports/%d/tasks/%d", imp, task));
         return ((JSONObject)json).getJSONObject("task");
@@ -189,7 +258,11 @@ public class RESTDataTest extends ImporterTestSupport {
     }
 
     int postNewImport() throws Exception {
-        MockHttpServletResponse resp = postAsServletResponse("/rest/imports", "");
+        return postNewImport(null);
+    }
+    int postNewImport(String body) throws Exception {
+        MockHttpServletResponse resp = body == null ? postAsServletResponse("/rest/imports", "")
+            : postAsServletResponse("/rest/imports", body, "application/json");
         
         assertEquals(201, resp.getStatusCode());
         assertNotNull( resp.getHeader( "Location") );

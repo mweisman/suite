@@ -26,6 +26,7 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
+import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.config.util.XStreamPersisterFactory;
 import org.geoserver.rest.PageInfo;
@@ -41,6 +42,7 @@ import org.opengeo.data.importer.Importer;
 import org.opengeo.data.importer.SpatialFile;
 import org.opengeo.data.importer.Table;
 import org.opengeo.data.importer.UpdateMode;
+import org.opengeo.data.importer.ImportContext.State;
 import org.opengeo.data.importer.transform.*;
 import org.restlet.data.Status;
 import org.restlet.ext.json.JsonRepresentation;
@@ -57,10 +59,11 @@ public class ImportJSONIO {
 
     public ImportJSONIO(Importer importer) {
         this.importer = importer;
-        xp = new XStreamPersisterFactory().createJSONPersister();
+        xp = importer.init(new XStreamPersisterFactory().createJSONPersister());
+        
         xp.setReferenceByName(true);
         xp.setExcludeIds();
-        xp.setCatalog(importer.getCatalog());
+        //xp.setCatalog(importer.getCatalog());
         xp.setHideFeatureTypeAttributes();
         // @todo this is copy-and-paste from org.geoserver.catalog.rest.FeatureTypeResource
         xp.setCallback(new XStreamPersister.Callback() {
@@ -93,7 +96,18 @@ public class ImportJSONIO {
         json.object();
         json.key("id").value(context.getId());
         json.key("state").value(context.getState());
-        
+
+        if (context.getTargetWorkspace() != null) {
+            json.key("targetWorkspsace").object();
+            toJSON(context.getTargetWorkspace());
+            json.endObject();
+        }
+        if (context.getTargetStore() != null) {
+            json.key("targetStore").object();
+            toJSON(context.getTargetStore());
+            json.endObject();
+        }
+
         tasks(context.getTasks(), true, page, json);
 
         json.endObject();
@@ -101,6 +115,35 @@ public class ImportJSONIO {
         json.flush();
     }
 
+    public ImportContext context(InputStream in) throws IOException {
+        JSONObject json = parse(in);
+        ImportContext context = null;
+        if (json.has("import")) {
+            context = new ImportContext();
+            
+            json = json.getJSONObject("import");
+            if (json.has("id")) {
+                context.setId(json.getLong("id"));
+            }
+            if (json.has("state")) {
+                context.setState(State.valueOf(json.getString("state")));
+            }
+            if (json.has("user")) {
+                context.setUser(json.getString("user"));
+            }
+            if (json.has("targetWorkspace")) {
+                context.setTargetWorkspace(
+                    fromJSON(json.getJSONObject("targetWorkspace"), WorkspaceInfo.class));
+            }
+            if (json.has("targetStore")) {
+                context.setTargetStore(
+                    fromJSON(json.getJSONObject("targetStore"), StoreInfo.class));
+            }
+            if (json.has("data")) {
+            }
+        }
+        return context;
+    }
 
     public void contexts(List<ImportContext> contexts, PageInfo page, OutputStream out) 
         throws IOException {

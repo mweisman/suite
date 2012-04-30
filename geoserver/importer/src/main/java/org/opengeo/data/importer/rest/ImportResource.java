@@ -16,6 +16,7 @@ import org.geoserver.rest.format.DataFormat;
 import org.geoserver.rest.format.StreamDataFormat;
 import org.opengeo.data.importer.ImportContext;
 import org.opengeo.data.importer.ImportFilter;
+import org.opengeo.data.importer.ImportTask;
 import org.opengeo.data.importer.Importer;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -119,6 +120,19 @@ public class ImportResource extends AbstractResource {
             try {
                 context = importer.createContext(null);
                 context.setUser(getCurrentUser());
+
+                if (getRequest().getEntity().getMediaType().equals(MediaType.APPLICATION_JSON)) {
+                    //read representation specified by user, use it to read 
+                    ImportContext newContext = 
+                        (ImportContext) getFormatPostOrPut().toObject(getRequest().getEntity());
+                    if (newContext.getTargetWorkspace() != null) {
+                        context.setTargetWorkspace(newContext.getTargetWorkspace());
+                    }
+                    if (newContext.getTargetStore() != null) {
+                        context.setTargetStore(newContext.getTargetStore());
+                    }
+                }
+
                 getResponse().redirectSeeOther(getPageInfo().rootURI("/imports/"+context.getId()));
                 getResponse().setEntity(new ImportContextJSONFormat().toRepresentation(context));
                 getResponse().setStatus(Status.SUCCESS_CREATED);
@@ -173,7 +187,7 @@ public class ImportResource extends AbstractResource {
                     return importer.getAllContexts();
                 } else {
                     return importer.getContextsByUser(getCurrentUser());
-            }
+                }
             }
             throw new RestletException("No import specified", Status.CLIENT_ERROR_BAD_REQUEST);
         }
@@ -192,7 +206,8 @@ public class ImportResource extends AbstractResource {
 
         @Override
         protected Object read(InputStream in) throws IOException {
-            return null;
+            ImportJSONIO json = new ImportJSONIO(importer);
+            return json.context(in);
         }
 
         @Override

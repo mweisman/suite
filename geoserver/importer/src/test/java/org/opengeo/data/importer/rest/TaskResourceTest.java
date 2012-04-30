@@ -14,6 +14,7 @@ import org.opengeo.data.importer.Directory;
 import org.opengeo.data.importer.ImportContext;
 import org.opengeo.data.importer.ImportTask;
 import org.opengeo.data.importer.ImporterTestSupport;
+import org.opengeo.data.importer.SpatialFile;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
@@ -280,7 +281,7 @@ public class TaskResourceTest extends ImporterTestSupport {
         assertEquals(1, context.getTasks().size());
 
         ImportTask task = context.getTasks().get(0);
-        assertTrue(task.getData() instanceof Directory);
+        assertTrue(task.getData() instanceof SpatialFile);
         assertEquals(ImportTask.State.READY, task.getState());
     }
 

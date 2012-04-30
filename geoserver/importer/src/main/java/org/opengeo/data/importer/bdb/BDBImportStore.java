@@ -98,7 +98,7 @@ public class BDBImportStore implements ImportStore {
             seqDb.openSequence(null, new DatabaseEntry("import_id".getBytes()), seqConfig);
         
         importBinding = new XStreamInfoSerialBinding<ImportContext>(
-            importer.createXSteamPersister(), ImportContext.class);
+            importer.createXStreamPersister(), ImportContext.class);
     }
 
 

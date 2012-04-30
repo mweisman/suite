@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -145,19 +146,35 @@ public class Importer implements InitializingBean, DisposableBean {
         context.setTargetWorkspace(targetWorkspace);
         context.setTargetStore(targetStore);
 
-        context = init(context);
+        init(context);
         contextStore.add(context);
         return context;
     }
 
-    public ImportContext init(ImportContext context) throws IOException {
+    public List<ImportTask> update(ImportContext context, ImportData data) throws IOException {
+        List<ImportTask> tasks = init(context, data);
+        
+        prep(context);
+        changed(context);
+
+        return tasks;
+    }
+
+    public void init(ImportContext context) throws IOException {
+        //context.getTasks().clear();
         ImportData data = context.getData();
-        if (data == null) {
-            return context;
+        if (data != null) {
+            init(context, data); 
         }
+    }
 
-        context.getData().prepare();
+    List<ImportTask> init(ImportContext context, ImportData data) throws IOException {
+        if (data == null) {
+            return Collections.EMPTY_LIST;
+        }
+        data.prepare();
 
+        List<ImportTask> tasks = new ArrayList();
         StoreInfo targetStore = context.getTargetStore();
         if (data instanceof FileData) {
             if (data instanceof Directory) {
@@ -188,10 +205,10 @@ public class Importer implements InitializingBean, DisposableBean {
                                 List<FileData> files = map.get(format);
                                 if (files.size() == 1) {
                                     //use the file directly
-                                    createTask(files.get(0), context, null);
+                                    tasks.add(createTask(files.get(0), context, null));
                                 }
                                 else {
-                                    createTask(dir.filter(files), context, null);
+                                    tasks.add(createTask(dir.filter(files), context, null));
                                 }
                                 
                                 map.remove(format);
@@ -201,7 +218,7 @@ public class Importer implements InitializingBean, DisposableBean {
                         //handle the left overs, each file gets its own task
                         for (List<FileData> files : map.values()) {
                             for (FileData file : files) {
-                                createTask(file, context, null);
+                                tasks.add(createTask(file, context, null));
                             }
                         }
 
@@ -211,10 +228,10 @@ public class Importer implements InitializingBean, DisposableBean {
                             List<FileData> files = map.get(format);
                             if (files.size() == 1) {
                                 //use the file directly
-                                createTask(files.get(0), context, targetStore);
+                                tasks.add(createTask(files.get(0), context, targetStore));
                             }
                             else {
-                                createTask(dir.filter(files), context, targetStore);
+                                tasks.add(createTask(dir.filter(files), context, targetStore));
                             }
                         }
                         //for (FileData file : dir.getFiles()) {
@@ -225,7 +242,7 @@ public class Importer implements InitializingBean, DisposableBean {
             }
             else {
                 //single file case
-                createTask((FileData) data, context, targetStore);
+                tasks.add(createTask((FileData) data, context, targetStore));
             }
         }
         else if (data instanceof Table) {
@@ -236,29 +253,31 @@ public class Importer implements InitializingBean, DisposableBean {
             //if no target store specified do direct import
             if (targetStore == null) {
                 //create one task for entire database
-                createTask(db, context, null);
+                tasks.add(createTask(db, context, null));
             }
             else {
                 //one by one import, create task for each table
                 for (Table t : db.getTables()) {
-                    createTask(t, context, targetStore);
+                    tasks.add(createTask(t, context, targetStore));
                 }
             }
         }
 
-        return prep(context);
+        prep(context);
+        return tasks;
     }
 
-    void createTask(ImportData data, ImportContext context, StoreInfo targetStore) {
+    ImportTask createTask(ImportData data, ImportContext context, StoreInfo targetStore) {
         // @revisit - why was this temporary
         //if (data instanceof ASpatialFile) return; // this is temporary
         ImportTask task = new ImportTask(data);
         task.setStore(targetStore);
         task.setDirect(targetStore == null);
         context.addTask(task);
+        return task;
     }
 
-    public ImportContext prep(ImportContext context) throws IOException {
+    public void prep(ImportContext context) throws IOException {
         boolean ready = true;
         for (ImportTask task : context.getTasks()) {
             ImportData data = task.getData();
@@ -357,7 +376,6 @@ public class Importer implements InitializingBean, DisposableBean {
         if (context.getId() != null) {
             contextStore.save(context);
         }
-        return context;
     }
 
     boolean prep(ImportTask task) {
@@ -460,6 +478,7 @@ public class Importer implements InitializingBean, DisposableBean {
     }
     
     public void changed(ImportContext context) {
+        context.updated();
         contextStore.save(context);
     }
 
@@ -927,8 +946,11 @@ public class Importer implements InitializingBean, DisposableBean {
         }
     }
 
-    public XStreamPersister createXSteamPersister() {
-        XStreamPersister xp = new XStreamPersisterFactory().createXMLPersister();
+    public XStreamPersister createXStreamPersister() {
+        return init(new XStreamPersisterFactory().createXMLPersister());
+    }
+    
+    public XStreamPersister init(XStreamPersister xp) {
         xp.setEncodeByReference();
         xp.setCatalog(catalog);
 

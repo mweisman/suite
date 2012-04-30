@@ -25,6 +25,7 @@ import org.geoserver.rest.format.DataFormat;
 import org.geoserver.rest.format.StreamDataFormat;
 import org.opengeo.data.importer.Directory;
 import org.opengeo.data.importer.ImportContext;
+import org.opengeo.data.importer.ImportData;
 import org.opengeo.data.importer.ImportTask;
 import org.opengeo.data.importer.Importer;
 import org.restlet.data.*;
@@ -65,40 +66,50 @@ public class TaskResource extends AbstractResource {
     }
 
     public void handlePost() {
-        ImportTask newTask = null;
+        ImportData data = null;
         
         getLogger().info("Handling POST of " + getRequest().getEntity().getMediaType());
         //file posted from form
         MediaType mimeType = getRequest().getEntity().getMediaType(); 
         if (MediaType.MULTIPART_FORM_DATA.equals(mimeType, true)) {
-            newTask = handleMultiPartFormUpload();
+            data = handleMultiPartFormUpload();
         }
         else if (MediaType.APPLICATION_WWW_FORM.equals(mimeType, true)) {
-            newTask = handleFormPost();
+            data = handleFormPost();
         }
 
-        if (newTask == null) {
+        if (data == null) {
             throw new RestletException("Unsupported POST", Status.CLIENT_ERROR_FORBIDDEN);
         }
 
-        acceptTask(newTask);
+        acceptData(data);
     }
-    
-    private void acceptTask(ImportTask newTask) {
+
+    private void acceptData(ImportData data) {
         ImportContext context = lookupContext();
-        context.addTask(newTask);
+        List<ImportTask> newTasks = null;
         try {
-            importer.prep(context);
-            context.updated();
+            newTasks = importer.update(context, data);
+            //importer.prep(context);
+            //context.updated();
         } 
         catch (IOException e) {
             throw new RestletException("Error updating context", Status.SERVER_ERROR_INTERNAL, e);
         }
 
-        getResponse().redirectSeeOther(getPageInfo().rootURI(String.format("/imports/%d/tasks/%d", 
-            context.getId(), newTask.getId())));
-        getResponse().setEntity(new ImportTaskJSONFormat().toRepresentation(newTask));
-        getResponse().setStatus(Status.SUCCESS_CREATED);
+        if (!newTasks.isEmpty()) {
+            Object result = newTasks;
+            if (newTasks.size() == 1) {
+                result = newTasks.get(0);
+                long taskId = newTasks.get(0).getId();
+                getResponse().redirectSeeOther(getPageInfo().rootURI(
+                    String.format("/imports/%d/tasks/%d", context.getId(), taskId)));
+            }
+
+            getResponse().setEntity(new ImportTaskJSONFormat().toRepresentation(result));
+            getResponse().setStatus(Status.SUCCESS_CREATED);
+        }
+
     }
 
     private Directory createDirectory() {
@@ -109,7 +120,7 @@ public class TaskResource extends AbstractResource {
         }
     }
     
-    private ImportTask handleFileUpload() {
+    private ImportData handleFileUpload() {
         Directory directory = createDirectory();
         
         try {
@@ -119,11 +130,10 @@ public class TaskResource extends AbstractResource {
                 Status.SERVER_ERROR_INTERNAL, e);
         }
         
-        return new ImportTask(directory);
+        return directory;
     }
     
-    private ImportTask handleMultiPartFormUpload() {
-        ImportTask newTask;
+    private ImportData handleMultiPartFormUpload() {
         DiskFileItemFactory factory = new DiskFileItemFactory();
         // @revisit - this appears to be causing OOME
         //factory.setSizeThreshold(102400000);
@@ -150,8 +160,7 @@ public class TaskResource extends AbstractResource {
                 throw new RestletException("Error writing file " + item.getName(), Status.SERVER_ERROR_INTERNAL, ex);
             }
         }
-        newTask = new ImportTask(directory);
-        return newTask;
+        return directory;
     }
 
     public boolean allowPut() {
@@ -162,10 +171,8 @@ public class TaskResource extends AbstractResource {
         if (getRequest().getEntity().getMediaType().equals(MediaType.APPLICATION_JSON)) {
             handleTaskPut();
         } else {
-            ImportTask newTask = handleFileUpload();
-            acceptTask(newTask);
+            acceptData(handleFileUpload());
         }
-        
     }
 
     ImportContext lookupContext() {
@@ -256,7 +263,7 @@ public class TaskResource extends AbstractResource {
         }
     }
 
-    private ImportTask handleFormPost() {
+    private ImportData handleFormPost() {
         Form form = getRequest().getEntityAsForm();
         String url = form.getFirstValue("url", null);
         if (url == null) {
@@ -291,7 +298,7 @@ public class TaskResource extends AbstractResource {
                 throw new RestletException("Possible invalid file", Status.SERVER_ERROR_INTERNAL);
             }
         }
-        return new ImportTask(dir);
+        return dir;
     }
 
     class ImportTaskJSONFormat extends StreamDataFormat {

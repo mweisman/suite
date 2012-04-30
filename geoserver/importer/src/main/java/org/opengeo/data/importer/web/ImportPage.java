@@ -91,7 +91,7 @@ public class ImportPage extends GeoServerSecuredPage {
                 dialog.showOkCancel(target, new DialogDelegate() {
                     @Override
                     protected Component getContents(String id) {
-                        XStreamPersister xp = importer().createXSteamPersister();
+                        XStreamPersister xp = importer().createXStreamPersister();
                         ByteArrayOutputStream bout = new ByteArrayOutputStream();
                         try {
                             xp.save(model.getObject(), bout);

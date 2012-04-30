@@ -93,7 +93,6 @@ components.  It is comprised of the following core components:
 
    chown tomcat /var/lib/%{TOMCAT}/webapps/*.war
    chkconfig %{TOMCAT} on
-   service %{TOMCAT} restart
 
 %preun
 
@@ -112,8 +111,6 @@ components.  It is comprised of the following core components:
     if [ -L $WEBAPPS/opengeo-docs ]; then
       unlink $WEBAPPS/opengeo-docs
     fi
-
-    service %{TOMCAT} restart
   fi
 
 %postun

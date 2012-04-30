@@ -8,6 +8,8 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.DataStoreInfo;
 import org.geotools.data.h2.H2DataStoreFactory;
 import org.opengeo.data.importer.Database;
 import org.opengeo.data.importer.Directory;
@@ -173,17 +175,46 @@ public class ImportResourceTest extends ImporterTestSupport {
         assertEquals(201, resp.getStatusCode());
         assertNotNull( resp.getHeader( "Location") );
 
-        Iterator<ImportContext> ctx = importer.getAllContexts();
-        int id = -1;
-        while (ctx.hasNext()) {
-            ctx.next();
-            id++;
-        }
+        int id = lastId();
         assertTrue( resp.getHeader("Location").endsWith( "/imports/"+ id));
 
         JSONObject json = (JSONObject) json(resp);
         JSONObject imprt = json.getJSONObject("import");
 
         assertEquals(id, imprt.getInt("id"));
+    }
+
+    public void testPostWithTarget() throws Exception {
+        createH2DataStore("sf", "skunkworks");
+
+        String json = 
+            "{" + 
+                "\"import\": { " + 
+                    "\"targetWorkspace\": {" +
+                       "\"workspace\": {" + 
+                           "\"name\": \"sf\"" + 
+                       "}" + 
+                    "}," +
+                    "\"targetStore\": {" +
+                        "\"dataStore\": {" + 
+                            "\"name\": \"skunkworks\"" + 
+                        "}" + 
+                     "}" +
+                "}" + 
+            "}";
+        
+        MockHttpServletResponse resp = postAsServletResponse("/rest/imports", json, "application/json");
+        assertEquals(201, resp.getStatusCode());
+        assertNotNull( resp.getHeader( "Location") );
+
+        int id = lastId();
+        assertTrue( resp.getHeader("Location").endsWith( "/imports/"+ id));
+
+        ImportContext ctx = importer.getContext(id);
+        assertNotNull(ctx);
+        assertNotNull(ctx.getTargetWorkspace());
+        assertEquals("sf", ctx.getTargetWorkspace().getName());
+        assertNotNull(ctx.getTargetStore());
+        assertEquals("skunkworks", ctx.getTargetStore().getName());
     }
 }

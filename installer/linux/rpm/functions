@@ -17,7 +17,14 @@ RPM_BUILD_ROOT=`pwd`/rpmbuild
 RPM_SOURCE_DIR=`pwd`/rpmbuild/SOURCES
 RPM_BUILD_DIR=`pwd`/rpmbuild/BUILD
 PKG_SOURCE_DIR=${RPM_SOURCE_DIR}/$PACKAGE
-ARCH=`uname -i`	
+
+# Check EL version so we can force EL6 to build as i686 on 32-bit                                                                   
+EL_VERSION=`cut -d ' ' -f 3 /etc/redhat-release | awk '{printf( "%d", $1 )}'`
+if [ "$EL_VERSION" -ge "6" ]; then
+  ARCH=`uname -p` # returns i686 on 32-bit, x86_64 on 64-bit
+else
+  ARCH=`uname -i` # returns i386 on 32-bit, x86_64 on 64-bit
+fi
 
 # build_info <package>
 function build_info() {

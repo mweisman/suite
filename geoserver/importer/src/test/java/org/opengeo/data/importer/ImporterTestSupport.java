@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.test.GeoServerTestSupport;
@@ -17,6 +19,10 @@ import org.w3c.dom.Document;
 import com.mockrunner.mock.web.MockHttpServletResponse;
 import java.io.StringWriter;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONBuilder;
 
@@ -105,7 +111,36 @@ public class ImporterTestSupport extends GeoServerTestSupport {
             getAsServletResponse("wms/reflect?layers=" + layer.getResource().getPrefixedName());
         assertEquals("image/png", response.getContentType());
     }
-    
+
+    protected DataStoreInfo createH2DataStore(String wsName, String dsName) {
+        //create a datastore to import into
+        Catalog cat = getCatalog();
+
+        DataStoreInfo ds = cat.getFactory().createDataStore();
+        ds.setWorkspace(cat.getWorkspaceByName(wsName));
+        ds.setName(dsName);
+        ds.setType("H2");
+
+        Map params = new HashMap();
+        params.put("database", getTestData().getDataDirectoryRoot().getPath()+"/" + dsName);
+        params.put("dbtype", "h2");
+        ds.getConnectionParameters().putAll(params);
+        ds.setEnabled(true);
+        cat.add(ds);
+        
+        return ds;
+    }
+
+    protected int lastId() {
+        Iterator<ImportContext> ctx = importer.getAllContexts();
+        int id = -1;
+        while (ctx.hasNext()) {
+            ctx.next();
+            id++;
+        }
+        return id;
+    }
+
     public static class JSONObjectBuilder extends JSONBuilder {
 
         public JSONObjectBuilder() {
