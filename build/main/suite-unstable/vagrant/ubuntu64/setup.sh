@@ -11,6 +11,7 @@ fi
 
 
 # Update apt
+apt-get clean
 apt-get update
 apt-get upgrade -y
 

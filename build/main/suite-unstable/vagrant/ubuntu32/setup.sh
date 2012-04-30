@@ -11,7 +11,9 @@ fi
 
 
 # Update apt
+apt-get clean
 apt-get update
+apt-get upgrade -y
 
 # Silently install the suite noninteractively
 export DEBIAN_FRONTEND=noninteractive
