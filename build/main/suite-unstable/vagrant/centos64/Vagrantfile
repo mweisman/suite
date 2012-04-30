@@ -7,7 +7,6 @@ Vagrant::Config.run do |config|
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  # TODO: Find a place to keep the base boxes and set this
   # config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
 
 
@@ -16,6 +15,14 @@ Vagrant::Config.run do |config|
   # Pass PostgreSQL requests to the host into the vm for testing the db
   config.vm.forward_port(5432, 5432)
   
-  # Run a script at boot to setup OpenGeo repos and install the nightly build
-  config.vm.provision :shell, :path => "setup.sh"
+  # Run a script at boot to setup OpenGeo repos and install the nightly build.
+  # The repo used can be configured by setting the REPO environment variable. The default
+  # repo (if REPO is unset) is test.
+
+  repo = ENV['REPO']
+  if not repo
+    config.vm.provision :shell, :path => "setup.sh", :args => "test"
+  else
+    config.vm.provision :shell, :path => "setup.sh", :args => repo
+  end
 end
