@@ -1,0 +1,20 @@
+Template: opengeo_suite/username
+Type: string
+Default: manager
+Description: Please choose a username for the tomcat manager:
+ The default username is 'manager'. Hit enter to accept, or pick your own.
+
+Template: opengeo_suite/password
+Type: password
+Description: Please enter a password for the tomcat manager:
+ The default password is 'manager'. Hit enter to accept, or pick your own.
+
+Template: opengeo_suite/password_confirm
+Type: password
+Description: Password confirmation:
+
+Template: opengeo_suite/password_mismatch
+Type: password
+Description: Passwords did not match. Please try again:
+ The two passwords you entered were not the same.
+

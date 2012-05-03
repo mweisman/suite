@@ -78,6 +78,11 @@ public class ItemResource extends AbstractResource {
             } else {
                 ImportItem item = (ImportItem) lookupItem(false);
                 progress.put("state", item.getState().toString());
+                if (item.getState() == ImportItem.State.ERROR) {
+                    if (item.getError() != null) {
+                        progress.put("message", item.getError().getMessage());
+                    }
+                }
             }
         } catch (JSONException jex) {
             throw new RestletException("Internal Error", Status.SERVER_ERROR_INTERNAL, jex);

@@ -460,10 +460,17 @@ public class Importer implements InitializingBean, DisposableBean {
         task.updateState();
         
         if (task.getState() == ImportTask.State.COMPLETE && !task.isDirect()) {
-            if (task.getData() instanceof Directory) {
+            Directory directory = null;
+            if ( task.getData() instanceof Directory) {
+                directory = (Directory) task.getData();
+            } else if ( task.getData() instanceof SpatialFile ) {
+                directory = new Directory( ((SpatialFile) task.getData()).getFile().getParentFile() );
+            }
+            if (directory != null) {
                 try {
-                    ((Directory) task.getData()).archive(getArchiveFile(task));
+                    directory.archive(getArchiveFile(task));
                 } catch (Exception ioe) {
+                    ioe.printStackTrace();
                     // this is not a critical operation, so don't make the whole thing fail
                     LOGGER.log(Level.WARNING, "Error archiving", ioe);
                 }
@@ -472,7 +479,7 @@ public class Importer implements InitializingBean, DisposableBean {
     }
     
     public File getArchiveFile(ImportTask task) throws IOException {
-        String archiveName = "import-" + task.getContext().getId() + "-" + task.getId() + ".zip";
+        String archiveName = "import-" + task.getContext().getId() + "-" + task.getId() + "-" + task.getData().getName() + ".zip";
         File dir = getCatalog().getResourceLoader().findOrCreateDirectory("uploads","archives");
         return new File(dir, archiveName);
     }
@@ -947,11 +954,17 @@ public class Importer implements InitializingBean, DisposableBean {
     }
 
     public XStreamPersister createXStreamPersister() {
-        return init(new XStreamPersisterFactory().createXMLPersister());
+        return initXStreamPersister(new XStreamPersisterFactory().createXMLPersister());
     }
     
-    public XStreamPersister init(XStreamPersister xp) {
-        xp.setEncodeByReference();
+    public XStreamPersister initXStreamPersister(XStreamPersister xp) {
+        return initXStreamPersister(xp, true);
+    }
+
+    public XStreamPersister initXStreamPersister(XStreamPersister xp, boolean encodeByRef) { 
+        if (encodeByRef) {
+            xp.setEncodeByReference();
+        }
         xp.setCatalog(catalog);
 
         XStream xs = xp.getXStream();

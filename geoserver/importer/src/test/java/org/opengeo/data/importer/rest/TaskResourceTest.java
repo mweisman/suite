@@ -68,6 +68,8 @@ public class TaskResourceTest extends ImporterTestSupport {
         postgis.setConnectionParameters(params);
         getCatalog().add(postgis);
         try {
+            // force connection - will fail if we cannot connect
+            postgis.getDataStore(null).getNames();
             jdbcStore = (JDBCDataStore) postgis.getDataStore(null);
         } catch (IOException ioe) {
             LOGGER.log(Level.WARNING,"Could not initialize postgis db",ioe);
@@ -104,7 +106,7 @@ public class TaskResourceTest extends ImporterTestSupport {
         assertEquals(1, context.getTasks().size());
 
         ImportTask task = context.getTasks().get(0);
-        assertTrue(task.getData() instanceof Directory);
+        assertTrue(task.getData() instanceof SpatialFile);
         assertEquals(ImportTask.State.READY, task.getState());
         
         return id;
@@ -135,7 +137,7 @@ public class TaskResourceTest extends ImporterTestSupport {
         assertEquals(1, context.getTasks().size());
 
         ImportTask task = context.getTasks().get(0);
-        assertTrue(task.getData() instanceof Directory);
+        assertTrue(task.getData() instanceof SpatialFile);
         assertEquals(ImportTask.State.READY, task.getState());
         
         return id;

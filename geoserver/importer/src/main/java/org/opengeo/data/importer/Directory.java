@@ -316,22 +316,43 @@ public class Directory extends FileData {
             id++;
         }
         ZipOutputStream zout = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(output)));
+        Exception error = null;
+
+        // don't call zout.close in finally block, if an error occurs and the zip
+        // file is empty by chance, the second error will mask the first
         try {
             IOUtils.zipDirectory(file, zout, null);
         } catch (Exception ex) {
+            error = ex;
+            try {
+                zout.close();
+            } catch (Exception ex2) {
+                // nothing, we're totally aborting
+            }
             output.delete();
             if (ex instanceof IOException) throw (IOException) ex;
             throw (IOException) new IOException("Error archiving").initCause(ex);
-        } finally {
+        } 
+        
+        // if we get here, the zip is properly written
+        try {
             zout.close();
+        } finally {
+            cleanup();
         }
-        cleanup();
     }
 
     @Override
     public void cleanup() throws IOException {
-        for (FileData f : getFiles()) {
-            f.cleanup();
+        File[] files = file.listFiles();
+        if (files != null) {
+            for (File f: files) {
+                if (f.isDirectory()) {
+                    new Directory(f).cleanup();
+                } else {
+                    f.delete();
+                }
+            }
         }
         super.cleanup();
     }

@@ -8,7 +8,15 @@
     <fileSets>
         <fileSet>
             <directory>sdk/target/sdk</directory>
+            <excludes>
+                <exclude>bin/</exclude>
+            </excludes>
             <outputDirectory>/</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>sdk/target/sdk/bin</directory>
+            <fileMode>0755</fileMode>
+            <outputDirectory>/bin</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

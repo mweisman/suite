@@ -55,31 +55,9 @@ import org.restlet.ext.json.JsonRepresentation;
 public class ImportJSONIO {
 
     Importer importer;
-    XStreamPersister xp;
-
+    
     public ImportJSONIO(Importer importer) {
         this.importer = importer;
-        xp = importer.init(new XStreamPersisterFactory().createJSONPersister());
-        
-        xp.setReferenceByName(true);
-        xp.setExcludeIds();
-        //xp.setCatalog(importer.getCatalog());
-        xp.setHideFeatureTypeAttributes();
-        // @todo this is copy-and-paste from org.geoserver.catalog.rest.FeatureTypeResource
-        xp.setCallback(new XStreamPersister.Callback() {
-
-            @Override
-            protected void postEncodeFeatureType(FeatureTypeInfo ft,
-                    HierarchicalStreamWriter writer, MarshallingContext context) {
-                try {
-                    writer.startNode("attributes");
-                    context.convertAnother(ft.attributes());
-                    writer.endNode();
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not get native attributes", e);
-                }
-            }
-        });
     }
     
     // allow tests to not require full importer
@@ -98,14 +76,10 @@ public class ImportJSONIO {
         json.key("state").value(context.getState());
 
         if (context.getTargetWorkspace() != null) {
-            json.key("targetWorkspsace").object();
-            toJSON(context.getTargetWorkspace());
-            json.endObject();
+            json.key("targetWorkspsace").value(toJSON(context.getTargetWorkspace()));
         }
         if (context.getTargetStore() != null) {
-            json.key("targetStore").object();
-            toJSON(context.getTargetStore());
-            json.endObject();
+            json.key("targetStore").value(toJSON(context.getTargetStore()));
         }
 
         tasks(context.getTasks(), true, page, json);
@@ -559,12 +533,40 @@ public class ImportJSONIO {
 
     JSONObject toJSON(Object o) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        XStreamPersister xp = persister(false);
         xp.save(o, out);
         return (JSONObject) JSONSerializer.toJSON(new String(out.toByteArray()));
     }
 
     <T> T fromJSON(JSONObject json, Class<T> clazz) throws IOException {
+        XStreamPersister xp = persister(true);
         return (T) xp.load(new ByteArrayInputStream(json.toString().getBytes()), clazz);
+    }
+
+    XStreamPersister persister(boolean encodeByRef) {
+        XStreamPersister xp = 
+            importer.initXStreamPersister(new XStreamPersisterFactory().createJSONPersister(), encodeByRef);
+        
+        xp.setReferenceByName(true);
+        xp.setExcludeIds();
+        //xp.setCatalog(importer.getCatalog());
+        xp.setHideFeatureTypeAttributes();
+        // @todo this is copy-and-paste from org.geoserver.catalog.rest.FeatureTypeResource
+        xp.setCallback(new XStreamPersister.Callback() {
+
+            @Override
+            protected void postEncodeFeatureType(FeatureTypeInfo ft,
+                    HierarchicalStreamWriter writer, MarshallingContext context) {
+                try {
+                    writer.startNode("attributes");
+                    context.convertAnother(ft.attributes());
+                    writer.endNode();
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not get native attributes", e);
+                }
+            }
+        });
+        return xp;
     }
 
     JSONObject parse(InputStream in) throws IOException {

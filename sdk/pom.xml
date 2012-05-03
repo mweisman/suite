@@ -69,6 +69,11 @@
             <artifactId>jetty-servlet</artifactId>
             <version>${jetty-version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.cargo</groupId>
+            <artifactId>cargo-ant</artifactId>
+            <version>1.2.1</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src</sourceDirectory>
@@ -86,15 +91,20 @@
                                     <fileset dir="src/main">
                                         <exclude name="assembly/"/>
                                         <exclude name="resources/*.txt"/>
+                                        <exclude name="resources/bin"/>
                                         <exclude name="resources/build.xml"/>
                                     </fileset>
                                 </copy>
                                 <copy todir="${project.build.directory}/sdk">
                                     <fileset dir="src/main/resources">
+                                        <include name="bin/"/>
                                         <include name="build.xml"/>
                                         <include name="*.txt"/>
                                     </fileset>
                                 </copy>
+                                <chmod dir="${project.build.directory}/sdk/bin" perm="755" includes="**/*.sh"/>
+                                <!-- TODO deal with symlink -->
+                                <!-- <symlink link="${project.build.directory}/sdk/bin/suite" resource="${project.build.directory}/sdk/bin/suite.sh"/> -->
                                 <copy todir="${project.build.directory}/sdk/src/main/resources/client/src/gxp/script">
                                     <fileset dir="${gxp}/src/script"/>
                                 </copy>
@@ -103,10 +113,10 @@
                                     <fileset dir="${gxp}/src/theme"/>
                                 </copy>
                                 <copy todir="${project.build.directory}/sdk/src/main/resources/client/src/openlayers">
-                                    <fileset dir="${geoexplorer}/app/static/externals/openlayers"/>
+                                    <fileset dir="${geoexplorer}/app/static/externals/openlayers" excludes="**/.git/**"/>
                                 </copy>
                                 <copy todir="${project.build.directory}/sdk/src/main/resources/client/src/geoext">
-                                    <fileset dir="${geoexplorer}/app/static/externals/GeoExt"/>
+                                    <fileset dir="${geoexplorer}/app/static/externals/GeoExt" excludes="**/.git/**"/>
                                 </copy>
                                 <copy todir="${project.build.directory}/sdk/src/main/resources/client/src/ext">
                                     <fileset dir="${geoexplorer}/app/static/externals/ext"/>
@@ -115,10 +125,10 @@
                                 <echo message="copy sdk dependencies"/>
                                 <mkdir dir="${project.build.directory}/sdk/lib"/>
                                 <copy todir="${project.build.directory}/sdk/lib/buildkit">
-                                    <fileset dir="${geoexplorer}/externals/buildkit"/>
+                                    <fileset dir="${geoexplorer}/externals/buildkit" excludes="**/.git/**"/>
                                 </copy>
                                 <copy todir="${project.build.directory}/sdk/lib/stick">
-                                    <fileset dir="${geoexplorer}/externals/stick"/>
+                                    <fileset dir="${geoexplorer}/externals/stick" excludes="**/.git/**"/>
                                 </copy>
                             </tasks>
                         </configuration>
