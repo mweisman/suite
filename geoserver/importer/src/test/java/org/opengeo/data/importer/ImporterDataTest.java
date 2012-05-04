@@ -406,4 +406,23 @@ public class ImporterDataTest extends ImporterTestSupport {
 //        importer.run(imp);
 //        runChecks("states");
 //    }
+
+    public void testImportNameClash() throws Exception {
+        File dir = unpack("shape/archsites_epsg_prj.zip");
+        
+        ImportContext context = 
+                importer.createContext(new SpatialFile(new File(dir, "archsites.shp")));
+        importer.run(context);
+        
+        Catalog cat = getCatalog();
+        assertNotNull(cat.getLayerByName("archsites"));
+        runChecks("archsites");
+
+        context = importer.createContext(new SpatialFile(new File(dir, "archsites.shp")));
+        importer.run(context);
+
+        ImportItem i = context.getTasks().get(0).getItems().get(0);
+        assertEquals("archsites0", i.getLayer().getName());
+        runChecks("archsites0");
+    }
 }

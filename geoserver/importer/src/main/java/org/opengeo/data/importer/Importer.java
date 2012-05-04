@@ -841,8 +841,12 @@ public class Importer implements InitializingBean, DisposableBean {
 
         //add the resource
         String name = findUniqueResourceName(resource);
-        resource.setName(name);
-        resource.setNativeName(name);
+        resource.setName(name); 
+
+        //JD: not setting a native name, it should actually already be set by this point and we 
+        // don't want to blindly set it to the same name as the resource name, which might have 
+        // changed to deal with name clashes
+        //resource.setNativeName(name);
         resource.setEnabled(true);
         catalog.add(resource);
 

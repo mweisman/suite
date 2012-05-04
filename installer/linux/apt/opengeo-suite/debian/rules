@@ -24,6 +24,8 @@ install: unpack-gxp patch-stamp
 	cp -rp $(CURDIR)/geowebcache.war $(CURDIR)/debian/opengeo-suite/usr/share/opengeo-suite/.
 	cp -rp $(CURDIR)/recipes.war $(CURDIR)/debian/opengeo-suite/usr/share/opengeo-suite/.
 	cp -rp $(CURDIR)/geoexplorer.war $(CURDIR)/debian/opengeo-suite/usr/share/opengeo-suite/.
+    cp $(CURDIR)/../../common/tomcat-admin-setup.sh $(CURDIR)/debian/opengeo-suite/usr/share/opengeo-suite/.
+    chmod +x $(CURDIR)/debian/opengeo-suite/usr/share/opengeo-suite/tomcat-admin-setup.sh
 
 	#rm -rf $(CURDIR)/geoexplorer $(CURDIR)/geoexplorer.zip
 	#unzip $(CURDIR)/geoexplorer.war -d geoexplorer

@@ -44,7 +44,12 @@ public class Directory extends FileData {
             throw new IOException(archive.getPath() + " is not a recognizable  format");
         }
 
-        File dir = new File(archive.getParentFile(), FilenameUtils.getBaseName(archive.getName()));
+        String basename = FilenameUtils.getBaseName(archive.getName());
+        File dir = new File(archive.getParentFile(), basename);
+        int i = 0;
+        while (dir.exists()) {
+            dir = new File(archive.getParentFile(), basename + i++);
+        }
         vfs.extractTo(archive, dir);
         return new Directory(dir);
     }

@@ -28,20 +28,6 @@ function unpack_apps() {
 	cp /usr/share/opengeo-suite/*.war /var/lib/tomcat6/webapps
 }
 
-function tomcat_credential_setup() {
-    local username=$1
-    local password=$2
-    mv /etc/tomcat6/tomcat-users.xml /etc/tomcat6/tomcat-users.xml.old
-    
-    echo "<?xml version='1.0' encoding='utf-8'?>
-    <tomcat-users>
-      <role rolename='manager'/>
-      <user username='$username' password='$password' roles='manager'/>
-    </tomcat-users>" >> /etc/tomcat6/tomcat-users.xml
-    chown -R root:tomcat6 /etc/tomcat6/tomcat-users.xml
-    chmod 0640 /etc/tomcat6/tomcat-users.xml
-}
-
 case "$1" in
     configure)
 
@@ -72,23 +58,11 @@ case "$1" in
       ln -sf $DOCS $WEBAPPS/opengeo-docs
     fi
 
-    # Setup the tomcat manager
-    db_get opengeo_suite/username
-    if [ "$RET" ]; then
-        username="$RET"
-    else
-      username="manager"
-    fi
-    db_get opengeo_suite/password_confirm
-    password="$RET"
-    if [ -z "$password" ]; then
-      password="manager"
-    fi
-    
-    tomcat_credential_setup $username $password
-
-
     invoke-rc.d tomcat6 restart
+    
+    echo ""
+    echo "NOTICE: Please run /usr/share/opengeo-suite/tomcat-admin-setup.sh to complete this installation."
+    echo ""
 
     ;;
 

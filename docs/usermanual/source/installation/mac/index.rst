@@ -1,3 +1,5 @@
+.. _installation.osx:
+
 Installing the OpenGeo Suite for Mac OS X
 =========================================
 

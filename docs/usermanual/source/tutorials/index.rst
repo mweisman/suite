@@ -8,3 +8,10 @@ The **Tutorials** section will contain "how-to" guides for performing various ta
 For information about basic component functionality, please see the component documentation projects.
 
 .. note:: This section is under construction.
+
+.. toctree::
+   :maxdepth: 2
+
+   gdal/index
+   mrsid/index
+   clientsdk

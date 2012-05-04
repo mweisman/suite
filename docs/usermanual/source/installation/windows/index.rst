@@ -1,3 +1,5 @@
+.. _installation.windows:
+
 Installing the OpenGeo Suite for Windows
 ========================================
 
