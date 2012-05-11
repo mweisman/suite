@@ -4,7 +4,7 @@
 
 build_info
 
-POSTGIS=postgis-1.5.3
+POSTGIS=postgis-1.5.4
 
 # grab files
 get_file http://postgis.refractions.net/download/$POSTGIS.tar.gz

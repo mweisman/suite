@@ -27,6 +27,7 @@
   <module>geowebcache</module>
   <module>production</module>
   <module>usermanual</module>
+  <module>gxp</module>
  </modules>
 
 </project>

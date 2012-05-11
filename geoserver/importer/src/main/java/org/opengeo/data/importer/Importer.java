@@ -425,6 +425,10 @@ public class Importer implements InitializingBean, DisposableBean {
     public void run(ImportContext context, ImportFilter filter) throws IOException {
         context.setState(ImportContext.State.RUNNING);
 
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Running import " + context.getId());
+        }
+        
         for (ImportTask task : context.getTasks()) {
             if (!filter.include(task)) {
                 continue;
@@ -459,7 +463,8 @@ public class Importer implements InitializingBean, DisposableBean {
         //check if the task is complete, ie all items are complete
         task.updateState();
         
-        if (task.getState() == ImportTask.State.COMPLETE && !task.isDirect()) {
+        if (task.getContext().isArchive() && 
+            task.getState() == ImportTask.State.COMPLETE && !task.isDirect()) {
             Directory directory = null;
             if ( task.getData() instanceof Directory) {
                 directory = (Directory) task.getData();
@@ -467,6 +472,9 @@ public class Importer implements InitializingBean, DisposableBean {
                 directory = new Directory( ((SpatialFile) task.getData()).getFile().getParentFile() );
             }
             if (directory != null) {
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine("Archiving directory " + directory.getFile().getAbsolutePath());
+                }       
                 try {
                     directory.archive(getArchiveFile(task));
                 } catch (Exception ioe) {

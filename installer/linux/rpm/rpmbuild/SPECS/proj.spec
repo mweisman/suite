@@ -1,5 +1,5 @@
 Name:           proj
-Version:        4.7.0
+Version:        4.8.0
 Release:        3%{?dist}
 Summary:        Cartographic projection software (PROJ.4)
 
@@ -75,7 +75,7 @@ done
 # fix version info to respect new ABI
 sed -i -e 's|5\:4\:5|6\:4\:6|' src/Makefile*
 
-%configure
+%configure --with-jni=no
 make OPTIMIZE="$RPM_OPT_FLAGS" %{?_smp_mflags}
 
 %install
@@ -110,6 +110,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/*
 %{_mandir}/man1/*.1*
 %{_libdir}/*.so.*
+%exclude %{_libdir}/pkgconfig/proj.pc
 
 %files devel
 %defattr(-,root,root,-)
@@ -138,6 +139,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc nad/README
 %attr(0644,root,root) %{_datadir}/%{name}/epsg
+%exclude %{_datadir}/%{name}/test27
+%exclude %{_datadir}/%{name}/test83
+%exclude %{_datadir}/%{name}/testvarious
 
 %changelog
 * Thu Mar 18 2010 Balint Cristian <cristian.balint@gmail.com> - 4.7.0-3

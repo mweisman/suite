@@ -11,7 +11,8 @@ var template = getResource("./templates/debug-loader.js").getContent();
 var libLoader = function(section, order, baseDir) {
     var paths = order.map(function(script) {
         // TODO: resolve path issues elsewhere
-        return "'@" + "/" + FS.relative(FS.join(baseDir, "."), script.root) + "/" + script.path + "'";
+        var relative = FS.relative(FS.join(baseDir, "."), script.root).replace(/\\/g, "/");
+        return "'@/" + relative + "/" + script.path + "'";
     });
     var body = template.replace("{{paths}}", paths.join(",\n"));
     return function(env) {

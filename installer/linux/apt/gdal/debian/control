@@ -9,7 +9,7 @@ Homepage: http://www.gdal.org/
 Package: libgdal
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libgeos-3.3.1, swig
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgeos-3.3.3, swig
 Description: The Geospatial Data Abstraction Library (GDAL)
  The Geospatial Data Abstraction Library (GDAL) is a unifying C/C++ API for 
  accessing raster geospatial data, and currently includes formats like 

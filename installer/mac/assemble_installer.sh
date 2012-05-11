@@ -24,6 +24,7 @@ base_url=http://suite.opengeo.org/builds/${DIST_PATH}/${REVISION}
 dashboard_url=$base_url/opengeosuite-${pro}${id}-dashboard-osx.zip
 suite_url=$base_url/opengeosuite-${pro}${id}-mac.zip
 ext_url=${base_url}/opengeosuite-${id}-ext.zip
+sdk_url=${base_url}/opengeosuite-${id}-sdk.zip
 pgsql_url=http://suite.opengeo.org/osxbuilds/postgis-osx.zip
 gdal_url=http://suite.opengeo.org/osxbuilds/gdal-osx.zip
 
@@ -260,6 +261,24 @@ if [ -d "./build/GDAL-MrSID.pkg" ]; then
 fi
 freeze ./gdal-mrsid.packproj
 checkrv $? "GDAL packaging"
+
+#
+# Build the SDK Package
+#
+getfile $sdk_url binaries/sdk.zip
+if [ -d binaries/sdk ]; then
+  rm -rf binaries/sdk
+fi
+unzip -o binaries/sdk.zip -d binaries/
+mv binaries/opengeosuite-*-sdk binaries/sdk
+checkrv $? "SDK unzip"
+if [ -d "./build/SDK.pkg" ]; then
+  find "./build/SDK.pkg" -type f -exec chmod 664 {} ';'
+  find "./build/SDK.pkg" -type d -exec chmod 775 {} ';'
+  rm -rf "./build/SDK.pkg"
+fi
+freeze ./sdk.packproj
+checkrv $? "SDK packaging"
 
 # 
 # Build the Suite package

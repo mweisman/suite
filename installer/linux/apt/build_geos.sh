@@ -4,7 +4,7 @@
 
 build_info
 
-GEOS=geos-3.3.1
+GEOS=geos-3.3.3
 
 # grab files
 get_file http://download.osgeo.org/geos/$GEOS.tar.bz2

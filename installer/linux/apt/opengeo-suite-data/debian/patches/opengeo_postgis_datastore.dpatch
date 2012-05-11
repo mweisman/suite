@@ -1,0 +1,45 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## postgis_datastore.dpatch.dpatch by  <jdeolive@packaging-u1040-32.dev.opengeo.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Update geoserver database connection paramters
+
+@DPATCH@
+
+diff -rc opengeo-suite-data-orig/data_dir/workspaces/opengeo/postgis/datastore.xml opengeo-suite-data/data_dir/workspaces/opengeo/postgis/datastore.xml
+*** opengeo-suite-data-orig/data_dir/workspaces/opengeo/postgis/datastore.xml	2012-04-23 01:15:26.000000000 +0000
+--- opengeo-suite-data/data_dir/workspaces/opengeo/postgis/datastore.xml	2012-04-23 01:14:53.000000000 +0000
+***************
+*** 9,15 ****
+    </workspace>
+    <connectionParameters>
+      <entry key="Connection timeout">20</entry>
+!     <entry key="port">54321</entry>
+      <entry key="dbtype">postgis</entry>
+      <entry key="host">localhost</entry>
+      <entry key="validate connections">true</entry>
+--- 9,15 ----
+    </workspace>
+    <connectionParameters>
+      <entry key="Connection timeout">20</entry>
+!     <entry key="port">5432</entry>
+      <entry key="dbtype">postgis</entry>
+      <entry key="host">localhost</entry>
+      <entry key="validate connections">true</entry>
+***************
+*** 24,30 ****
+      <entry key="Max open prepared statements">50</entry>
+      <entry key="preparedStatements">false</entry>
+      <entry key="Estimated extends">true</entry>
+!     <entry key="user">postgres</entry>
+      <entry key="min connections">1</entry>
+    </connectionParameters>
+    <__default>true</__default>
+--- 24,30 ----
+      <entry key="Max open prepared statements">50</entry>
+      <entry key="preparedStatements">false</entry>
+      <entry key="Estimated extends">true</entry>
+!     <entry key="user">opengeo</entry>
+      <entry key="min connections">1</entry>
+    </connectionParameters>
+    <__default>true</__default>

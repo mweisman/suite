@@ -16,7 +16,7 @@
 
     <property name="sdk.home" location="."/>
     <property name="app.proxy.geoserver" value=""/>
-    <property name="app.port" value="8080"/>
+    <property name="app.port" value="9080"/>
     <property name="suite.domain" value="localhost"/>
     <property name="suite.port" value="8080"/>
     <property name="suite.container" value="tomcat6x"/>

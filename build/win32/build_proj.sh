@@ -22,10 +22,6 @@ checkrc $? "unpacking $PROJ_DATUM"
 
 pushd build/$PROJ
 
-# Patch a current build issue with MinGW and proj
-patch --binary -p0 < ../../proj_mutex.patch
-checkrc $? "Proj mutex patch"
-
 # Patch the nad install file
 patch --binary -p0 < ../../proj_makefile.patch
 checkrc $? "Proj makefile patch"

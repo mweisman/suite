@@ -1,6 +1,6 @@
 Summary:        Geographic Information Systems Extensions to PostgreSQL
 Name:           postgis
-Version:        1.5.3
+Version:        1.5.4
 Release:        1
 License:        GPL v2
 Group:          Applications/Databases
@@ -134,7 +134,7 @@ rm -rf %{buildroot}
 - update to current version
 * Mon Jul 14 2008 Otto Dassau 1.3.3
 - added rpmlintrc file
-* Wed Jul 09 2007 Dirk Stöcker <opensuse@dstoecker.de> 1.3.1
+* Wed Jul 09 2007 Dirk StÃ¶cker <opensuse@dstoecker.de> 1.3.1
 - adapted to openSUSE build service
 * Tue Dec 22 2005 Devrim GUNDUZ 1.1.0
 - Final fixes for 1.1.0

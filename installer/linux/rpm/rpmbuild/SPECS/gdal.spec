@@ -9,7 +9,7 @@ URL: http://www.gdal.org/
 Source: http://download.osgeo.org/gdal/gdal-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: gcc
-BuildRequires: geos-devel >= 3.0.0
+BuildRequires: geos-devel >= 3.3.3
 
 Requires: geos >= 3.0.0
 Requires: swig

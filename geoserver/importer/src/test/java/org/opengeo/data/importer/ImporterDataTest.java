@@ -226,21 +226,12 @@ public class ImporterDataTest extends ImporterTestSupport {
 //        runChecks("states");
 //    }
 //
+
     public void testImportIntoDatabase() throws Exception {
         Catalog cat = getCatalog();
 
-        DataStoreInfo ds = cat.getFactory().createDataStore();
-        ds.setWorkspace(cat.getDefaultWorkspace());
-        ds.setName("spearfish");
-        ds.setType("H2");
+        DataStoreInfo ds = createH2DataStore(cat.getDefaultWorkspace().getName(), "spearfish");
 
-        Map params = new HashMap();
-        params.put("database", getTestData().getDataDirectoryRoot().getPath()+"/spearfish");
-        params.put("dbtype", "h2");
-        ds.getConnectionParameters().putAll(params);
-        ds.setEnabled(true);
-        cat.add(ds);
-        
         File dir = tmpDir();
         unpack("shape/archsites_epsg_prj.zip", dir);
         unpack("shape/bugsites_esri_prj.tar.gz", dir);
@@ -285,18 +276,8 @@ public class ImporterDataTest extends ImporterTestSupport {
     public void testImportIntoDatabaseWithEncoding() throws Exception {
         Catalog cat = getCatalog();
 
-        DataStoreInfo ds = cat.getFactory().createDataStore();
-        ds.setWorkspace(cat.getDefaultWorkspace());
-        ds.setName("ming");
-        ds.setType("H2");
+        DataStoreInfo ds = createH2DataStore(cat.getDefaultWorkspace().getName(), "ming"); 
 
-        Map params = new HashMap();
-        params.put("database", getTestData().getDataDirectoryRoot().getPath()+"/ming");
-        params.put("dbtype", "h2");
-        ds.getConnectionParameters().putAll(params);
-        ds.setEnabled(true);
-        cat.add(ds);
-        
         File dir = tmpDir();
         unpack("shape/ming_time.zip", dir);
 
@@ -424,5 +405,25 @@ public class ImporterDataTest extends ImporterTestSupport {
         ImportItem i = context.getTasks().get(0).getItems().get(0);
         assertEquals("archsites0", i.getLayer().getName());
         runChecks("archsites0");
+    }
+
+    public void testArchiveOnIndirectImport() throws Exception {
+        File dir = unpack("shape/archsites_epsg_prj.zip");
+        assertTrue(dir.exists());
+
+        DataStoreInfo ds = createH2DataStore(null, "foo");
+        
+        ImportContext context = 
+            importer.createContext(new SpatialFile(new File(dir, "archsites.shp")), ds);
+        importer.run(context);
+        assertFalse(dir.exists());
+
+        dir = unpack("shape/bugsites_esri_prj.tar.gz");
+        assertTrue(dir.exists());
+        context = importer.createContext(new SpatialFile(new File(dir, "bugsites.shp")), ds);
+        context.setArchive(false);
+
+        importer.run(context);
+        assertTrue(dir.exists());
     }
 }

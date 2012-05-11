@@ -10,6 +10,7 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerInfo;
+import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
@@ -116,8 +117,9 @@ public class ImporterTestSupport extends GeoServerTestSupport {
         //create a datastore to import into
         Catalog cat = getCatalog();
 
+        WorkspaceInfo ws = wsName != null ? cat.getWorkspaceByName(wsName) : cat.getDefaultWorkspace();
         DataStoreInfo ds = cat.getFactory().createDataStore();
-        ds.setWorkspace(cat.getWorkspaceByName(wsName));
+        ds.setWorkspace(ws);
         ds.setName(dsName);
         ds.setType("H2");
 

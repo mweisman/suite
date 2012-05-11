@@ -1,12 +1,12 @@
 Name: opengeo-data-tools
-Version: 2.4.4
+Version: 2.5
 Release: 1
 Summary: OpenGeo Suite Data Tools
 Group: Applications/Engineering
 License: see http://opengeo.org
 Requires(post): bash
 Requires(preun): bash
-Requires: opengeo-geoserver >= 2.4.4
+Requires: opengeo-geoserver >= 2.5
 
 %define _rpmdir ../
 %define _rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm

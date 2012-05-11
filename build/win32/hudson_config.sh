@@ -5,10 +5,10 @@ webroot=/c/build/web/
 gtkroot=/c/opt/gtk+-bundle_2.16.6
 
 # Versions we are going to continuously integrate...
-geos_version=3.3.1
+geos_version=3.3.3
 gdal_version=1.8.1
-postgis_version=1.5.3
-proj_version=4.7.0
+postgis_version=1.5.4
+proj_version=4.8.0
 pgsql_version=8.4.9
 libxml2_version=2.7.6
 
