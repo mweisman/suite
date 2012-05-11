@@ -1,0 +1,12 @@
+Source: opengeo-suite-client-sdk
+Section: science
+Priority: extra
+Maintainer: OpenGeo <inquiry@opengeo.org>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: http://opengeo.org
+
+Package: opengeo-suite-client-sdk
+Architecture: any
+Depends: debconf, ant, ${misc:Depends}
+Description: The OpenGeo Suite Client SDK provides tools for building web mapping applications backed by the OpenGeo Suite.
