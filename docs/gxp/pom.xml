@@ -22,7 +22,7 @@
                             <tasks>
                                 <mkdir dir="${basedir}/src"/>
                                 <copy todir="${basedir}/src">
-                                    <fileset dir="${basedir}/../../geoexplorer/externals/geoexplorer/app/static/externals/gxp/src/doc" includes="**/*"/>
+                                    <fileset dir="${basedir}/../../geoexplorer/externals/geoexplorer/app/static/externals/gxp/" includes="**/*"/>
                                 </copy>
                             </tasks>
                         </configuration>
@@ -35,8 +35,9 @@
                         <phase>compile</phase>
                         <configuration>
                             <tasks>
+                                <ant dir="src" target="parsedocs"/>
                                 <exec executable="sphinx-build" failonerror="true" dir="${basedir}">
-                                    <arg line="-c ${basedir} -b html -d ${build.directory}/doctrees src ${build.directory}/html"/>
+                                    <arg line="-c ${basedir} -b html -d ${build.directory}/doctrees src/src/doc ${build.directory}/html"/>
                                 </exec>
                             </tasks>
                         </configuration>

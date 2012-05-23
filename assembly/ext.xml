@@ -19,6 +19,13 @@
         <include>gt-arcsde-*.jar</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>geoserver/extension/target/dependency</directory>
+      <outputDirectory>sqlserver</outputDirectory>
+      <includes>
+        <include>gt-jdbc-sqlserver-*.jar</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <files>
     <file>

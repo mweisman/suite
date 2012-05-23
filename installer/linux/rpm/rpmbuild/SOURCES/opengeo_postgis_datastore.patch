@@ -19,6 +19,3 @@ diff -ru data_dir_orig/workspaces/opengeo/postgis/datastore.xml data_dir/workspa
      <entry key="min connections">1</entry>
    </connectionParameters>
    <__default>true</__default>
--</dataStore>
-\ No newline at end of file
-+</dataStore>

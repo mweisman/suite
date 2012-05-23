@@ -105,6 +105,7 @@ public class Directory extends FileData {
             //scan all the files looking for spatial ones
             for (File f : dir.listFiles()) {
                 if (f.isHidden()) {
+                    all.remove(f);
                     continue;
                 }
                 if (f.isDirectory()) {
@@ -119,6 +120,12 @@ public class Directory extends FileData {
                         files.add(d);
                     }
                     //q.push(f);
+                    continue;
+                }
+
+                //special case for .aux files, they are metadata but get picked up as readable 
+                // by the erdas imagine reader...just ignore them for now 
+                if ("aux".equalsIgnoreCase(FilenameUtils.getExtension(f.getName()))) {
                     continue;
                 }
 

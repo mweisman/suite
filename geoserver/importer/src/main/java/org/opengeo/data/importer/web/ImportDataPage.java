@@ -50,6 +50,7 @@ import org.geoserver.web.data.workspace.WorkspacesModel;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerDialog.DialogDelegate;
 import org.geoserver.web.wicket.ParamResourceModel;
+import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.util.logging.Logging;
 import org.opengeo.data.importer.ImportContext;
 import org.opengeo.data.importer.ImportData;
@@ -113,6 +114,12 @@ public class ImportDataPage extends GeoServerSecuredPage {
                 icon.add(
                     new AttributeModifier("alt", true, source.getDescription(ImportDataPage.this)));
                 item.add(icon);
+
+                if (!source.isAvailable()) {
+                    item.setEnabled(false);
+                    item.add(new SimpleAttributeModifier("title", "Data source not available. Please " +
+                        "install required plug-in and drivers."));
+                }
             }
             
         };
@@ -373,6 +380,28 @@ public class ImportDataPage extends GeoServerSecuredPage {
             ImportSourcePanel createPanel(String panelId) {
                 return new PostGISPanel(panelId);
             }  
+        }, 
+        ORACLE(DataIcon.DATABASE) { 
+            @Override
+            ImportSourcePanel createPanel(String panelId) {
+                return new OraclePanel(panelId);
+            }
+
+            @Override
+            boolean isAvailable() {
+                return isDataStoreFactoryAvaiable("org.geotools.data.oracle.OracleNGDataStoreFactory");
+            }
+        }, 
+        SQLSERVER(DataIcon.DATABASE) {
+            @Override
+            ImportSourcePanel createPanel(String panelId) {
+                return new SQLServerPanel(panelId);
+            }
+
+            @Override
+            boolean isAvailable() {
+                return isDataStoreFactoryAvaiable("org.geotools.data.sqlserver.SQLServerDataStoreFactory");
+            }
         };
         
 //        directory(new ResourceReference(GeoServerApplication.class, "img/icons/silk/folder.png"),
@@ -407,7 +436,42 @@ public class ImportDataPage extends GeoServerSecuredPage {
         ResourceReference getIcon() {
             return icon.getIcon();
         }
-        
+
+        boolean isAvailable() {
+            return true;
+        }
+
+        boolean isDataStoreFactoryAvaiable(String className) {
+            Class<DataStoreFactorySpi> clazz = null;
+            try {
+                clazz = (Class<DataStoreFactorySpi>) Class.forName(className);
+            }
+            catch(Exception e) {
+                if(LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "DataStore class not available: " + className, e);
+                }
+            }
+            if (clazz == null) {
+                return false;
+            }
+
+            DataStoreFactorySpi factory = null;
+            try {
+                factory = clazz.newInstance();
+            }
+            catch(Exception e) {
+                if(LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "Error creating DataStore factory: " + className, e);
+                }
+            }
+
+            if (factory == null) {
+                return false;
+            }
+
+            return factory.isAvailable();
+        }
+
         abstract ImportSourcePanel createPanel(String panelId);
     }
 }

@@ -45,35 +45,38 @@ We will use the ``suite-sdk`` script to set up a new viewer application called
 
 .. note:: For more information on the ``suite-sdk``, please see the section on :ref:`apps.sdk.client.script`.
 
-Run the following commands::
+Run the following command, replacing ``path/to/myviewer`` with the desired name of and path to your application::
 
   suite-sdk create /path/to/myviewer
+
+This will generate a template application.  Now run the following command::
+
   suite-sdk debug /path/to/myviewer
 
-The application will run in debug mode on port 8080. If you want to run on a
-different port, specify it with the :command:`-p` flag::
-
-  suite-sdk debug /path/to/myviewer -p 9090
-
-Now start up a browser, and type in the address of the application:
+The application will now run in debug mode on port 9080 of the local machine.  Now start up a browser, and type in the address of the application (such as ``http://localhost:9080/``:
 
 .. figure:: ../img/basic_viewer.png
    :align: center
 
 What you get is a basic web mapping application which contains a layer tree, a map panel and some map tools. The map panel contains an OpenStreetMap base layer.
 
+.. note:: If you want to run on a different port, specify it with the ``-l`` flag (e.g. ``suite-sdk debug -l 9090 /path/to/myviewer``).
+
 Dissecting the Viewer
 ---------------------
 
-To examine how this project was set up, use your browser's debugging tool, e.g. Chrome/Safari Developer Tools or Firebug in Firefox.  Select the :guilabel:`Script` tab and look for the file :file:`app.js`
+To examine how this project was set up, use your browser's debugging tool, e.g. Chrome/Safari Developer Tools or Firebug in Firefox.  Select the :guilabel:`Script` tab and look for the file :file:`app.js`.
 
-.. note:: You're looking for the second entry of :file:`app.js`; the first one is the loader file
+.. note:: You're looking for the *second* instance of :file:`app.js` in the Scripts list; the first one is the loader file.
 
 .. figure:: ../img/basic_firebug.png
    :align: center
 
+
 Dependency Management
 ---------------------
+
+The :file:`app.js` file can be found in :file:`/src/app/` from the root of your application.
 
 The first thing to see in :file:`app.js` is the list of JavaScript dependencies that are required to run the application. Whenever you add a component to the application, be sure to add a line to this file with the relative path to the file it is defined in, using the following pattern:
 
@@ -85,14 +88,14 @@ Everything listed here will be pulled in by the application build tool. The
 result is a small application footprint, because only the required components
 are included in the build.
 
-.. note::  Whenever you add dependencies to :file:`app.js`, the debug server will need to be restarted.  To do so, go to the console where you ran :command:`suite-sdk`, hit Ctrl+C, and run the same command again
+.. note::  Whenever you add dependencies to :file:`app.js`, the debug server will need to be restarted.  To do so, go to the console where you ran ``suite-sdk``, hit Ctrl+C, and run the ``suite-sdk debug`` command again as above.
 
 Application details
 -------------------
 
 In the example application, everything is wrapped by an anonymous function which is called when ``Ext.onReady`` fires. This is when the DOM is ready, i.e. when content can be added to a web page.
 
-Our application creates a ``gxp.Viewer`` instance. The viewport is filled with a border layout, which has two items, a container in the 'west' region 200 pixels wide, and the map in the 'center' region. Please note that all tools in the client SDK are Ext plugins, so they can be created with a ``ptype`` shortcut in the config, similar to the ``xtype`` shortcut for Ext components. This viewer application defines the following tools:
+Our application creates a ``gxp.Viewer`` instance. The viewport is filled with a border layout, which has two items, a container in the 'west' region 200 pixels wide, and the map in the 'center' region. Please note that all tools in the Client SDK are Ext plugins, so they can be created with a ``ptype`` shortcut in the config, similar to the ``xtype`` shortcut for Ext components. This viewer application defines the following tools:
 
 * A **Layer Tree**, which will be rendered in the 'west' panel defined in the portalConfig.
 * The **Add Layers** tool, a button that, when clicked, creates a dialog to add new layers to the map. This tool will be part of the top toolbar of the layer tree.
@@ -101,16 +104,29 @@ Our application creates a ``gxp.Viewer`` instance. The viewport is filled with a
 * The **Zoom** tool, which will create two buttons in the map top toolbar, to zoom in and zoom out with a factor 2 centered on the current map center.
 * The **Navigation History** tool, which will create two buttons in the map's top toolbar, to navigate through visited map extents.
 
-The viewer configuration defines two layer sources, a WMS-C (cacheable WMS) source to a local GeoServer (with the embedded GeoWebCache), and an OpenStreetMap source. Layer sources are also implemented as Ext plugins, so configured with a ``ptype``. The configuration for the map defines the initial map extent (centered on the USA) and the layers to load in the map, in this case an OSM base layer and the ``usa:states`` layer from an OpenGeo Suite's default GeoServer setup. If no local GeoServer can be found, this layer will not be loaded of course. Finally, a zoom slider is defined. Note that this can also be done using ``mapItems``.
+The viewer configuration defines two layer sources, a WMS-C (cacheable WMS) source to a local GeoServer (with the embedded GeoWebCache), and an OpenStreetMap source. Layer sources are also implemented as Ext plugins, so configured with a ``ptype``. The configuration for the map defines the initial map extent (centered on the USA) and the layers to load in the map, in this case an OSM base layer and the ``usa:states`` layer from an OpenGeo Suite's default GeoServer setup.  (See :ref:`apps.sdk.client.dev.basics.proxy` for how to link this application to a GeoServer instance.)  Finally, a zoom slider is defined. Note that this can also be done using ``mapItems``.
 
-In the above application, if there isn't a local GeoServer running, it is possible to proxy a remote GeoServer::
+.. _apps.sdk.client.dev.basics.proxy:
 
-  suite-sdk debug /path/to/myviewer -g http://www.example.com/geoserver/ 
+Proxying GeoServer
+------------------
 
-If this GeoServer has the ``usa:states`` layer, it will be added to the application:
+A GeoServer instance will not be accessible by default unless you add the ``-g`` option to the ``debug`` command.  This will proxy a remote GeoServer, or just one running on a different port.  If you have a GeoServer instance running locally on port 8080, use the following command::
+
+  suite-sdk debug -g http://localhost:8080/geoserver /path/to/myviewer 
+
+To proxy a remote GeoServer, simply replace the URL with the location of the remote GeoServer instance::
+
+  suite-sdk debug -g http://demo.opengeo.org/geoserver /path/to/myviewer 
+
+.. note::  Pressing ``Ctrl-C`` in the terminal will shut down the server and allow the new command to be issued.
+
+The commands above will allow GeoServer to be accessible to the application at the relative path of :file:`/geoserver`.
 
 .. figure:: ../img/basic_states.png
    :align: center
+
+   *Application with a GeoServer proxy showing usa:states layer*
 
 Next we will add more components to our app, and start with some basic viewer components.
 

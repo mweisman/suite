@@ -5,18 +5,11 @@
 package org.opengeo.data.importer.web;
 
 import static org.geotools.data.postgis.PostgisNGDataStoreFactory.LOOSEBBOX;
-import static org.geotools.data.postgis.PostgisNGDataStoreFactory.PREPARED_STATEMENTS;
 import static org.geotools.jdbc.JDBCDataStoreFactory.DATABASE;
-import static org.geotools.jdbc.JDBCDataStoreFactory.FETCHSIZE;
 import static org.geotools.jdbc.JDBCDataStoreFactory.HOST;
-import static org.geotools.jdbc.JDBCDataStoreFactory.MAXCONN;
-import static org.geotools.jdbc.JDBCDataStoreFactory.MAXWAIT;
-import static org.geotools.jdbc.JDBCDataStoreFactory.MINCONN;
 import static org.geotools.jdbc.JDBCDataStoreFactory.PASSWD;
 import static org.geotools.jdbc.JDBCDataStoreFactory.PK_METADATA_TABLE;
 import static org.geotools.jdbc.JDBCDataStoreFactory.USER;
-import static org.geotools.jdbc.JDBCDataStoreFactory.VALIDATECONN;
-import static org.geotools.jdbc.JDBCJNDIDataStoreFactory.JNDI_REFNAME;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -34,7 +27,7 @@ import org.geotools.jdbc.JDBCDataStoreFactory;
  * @author Andrea Aime - OpenGeo
  */
 public class PostGISPanel extends AbstractDbPanel {
-    
+
     JNDIDbParamPanel jndiParamPanel;
     BasicDbParamPanel basicParamPanel;
 
@@ -72,9 +65,7 @@ public class PostGISPanel extends AbstractDbPanel {
         params.put(JDBCDataStoreFactory.DBTYPE.key, (String) PostgisNGDataStoreFactory.DBTYPE.sample);
         if (CONNECTION_JNDI.equals(connectionType)) {
             factory = new PostgisNGJNDIDataStoreFactory();
-
-            params.put(JNDI_REFNAME.key, jndiParamPanel.jndiReferenceName);
-            params.put(JDBCDataStoreFactory.SCHEMA.key, jndiParamPanel.schema);
+            fillInJndiParams(params, jndiParamPanel);
         } 
         else {
             factory = new PostgisNGDataStoreFactory();
@@ -88,12 +79,7 @@ public class PostGISPanel extends AbstractDbPanel {
             params.put(JDBCDataStoreFactory.SCHEMA.key, basicParamPanel.schema);
 
             // connection pool params
-            params.put(MINCONN.key, basicParamPanel.connPoolPanel.minConnection);
-            params.put(MAXCONN.key, basicParamPanel.connPoolPanel.maxConnection);
-            params.put(FETCHSIZE.key, basicParamPanel.connPoolPanel.fetchSize);
-            params.put(MAXWAIT.key, basicParamPanel.connPoolPanel.timeout);
-            params.put(VALIDATECONN.key, basicParamPanel.connPoolPanel.validate);
-            params.put(PREPARED_STATEMENTS.key, basicParamPanel.connPoolPanel.preparedStatements);
+            fillInConnPoolParams(params, basicParamPanel);
         }
 
         //advanced

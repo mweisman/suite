@@ -109,22 +109,22 @@ a.app-disabled-permanently:hover {
 .dash-panel-content-item p {
     width: 33em;
 }
-.dash-panel-content-item.geoserver {
+div.dash-panel-content-item.geoserver {
     background-image: url(img/geoserver-sm.png);
 }
-.dash-panel-content-item.geoexplorer {
+div.dash-panel-content-item.geoexplorer {
     background-image: url(img/geoexplorer-sm.png);
 }
-.dash-panel-content-item.styler {
+div.dash-panel-content-item.styler {
     background-image: url(img/styler_sm.png);
 }
-.dash-panel-content-item.geoeditor {
+div.dash-panel-content-item.geoeditor {
     background-image: url(img/geoeditor-sm.png);
 }
-.dash-panel-content-item.geowebcache {
+div.dash-panel-content-item.geowebcache {
     background-image: url(img/geowebcache_sm.png);
 }
-.dash-panel-content-item.postgis {
+div.dash-panel-content-item.postgis {
     background-image: url(img/postgis_sm.png);
 }
 .dash-panel-content-item ul.quick-links {
@@ -225,9 +225,10 @@ tr.dash-glance-component:hover ul {
 
 ul.quick-links {
     margin: 0;
+    list-style: none;
 }
 .quick-links li {
-    display: inline-block;
+    display: inline;
     min-width: 4em;
     margin: 4px 0;
     padding: 0 8px;

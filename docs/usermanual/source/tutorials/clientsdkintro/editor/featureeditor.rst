@@ -10,7 +10,7 @@ Unlike the feature manager, the feature editor is a visible component in the vie
     {
         ptype: "gxp_featureeditor",
         featureManager: "states_manager",
-        autoLoadFeatures: true
+        autoLoadFeature: true
     }
 
 Restart the server and reload the browser. Two new tools will be added to the toolbar: one to create new features, and one to modify existing features:

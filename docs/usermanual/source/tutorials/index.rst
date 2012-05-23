@@ -14,5 +14,6 @@ For information about basic component functionality, please see the component do
 
    gdal/index
    mrsid/index
+   remotedeploy
    clientsdk
    clientsdkintro/index

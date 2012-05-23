@@ -14,6 +14,10 @@
       <outputDirectory>geoexplorer</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>docs/gxp/target/html</directory>
+      <outputDirectory>sdk-api</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>docs/geoserver/target/html</directory>
       <outputDirectory>geoserver</outputDirectory>
     </fileSet>

@@ -129,6 +129,26 @@ public class ImporterDataTest extends ImporterTestSupport {
         runChecks("bugsites");
     }
  
+    public void testImportNoCrsLatLonBoundingBox() throws Exception {
+        File dir = unpack("shape/archsites_no_crs.zip");
+
+        ImportContext context = importer.createContext(new Directory(dir));
+        assertEquals(1, context.getTasks().size());
+
+        ImportTask task = context.getTasks().get(0);
+        assertEquals(ImportTask.State.INCOMPLETE, task.getState());
+        assertEquals(1, task.getItems().size());
+
+        ImportItem item = task.getItems().get(0);
+        assertEquals(ImportItem.State.NO_CRS, item.getState());
+        assertNull(item.getLayer().getResource().getLatLonBoundingBox());
+
+        item.getLayer().getResource().setSRS("EPSG:26713");
+        importer.changed(item);
+
+        assertEquals(ImportItem.State.READY, item.getState());
+        assertNotNull(item.getLayer().getResource().getLatLonBoundingBox());
+    }
     public void testImportUnknownFile() throws Exception {
         File dir = unpack("gml/states_wfs11.xml.gz");
 
@@ -425,5 +445,19 @@ public class ImporterDataTest extends ImporterTestSupport {
 
         importer.run(context);
         assertTrue(dir.exists());
+    }
+
+    public void testImportDatabaseIntoDatabase() throws Exception {
+        File dir = unpack("h2/cookbook.zip");
+
+        DataStoreInfo ds = createH2DataStore("gs", "cookbook");
+
+        Map params = new HashMap();
+        params.put(H2DataStoreFactory.DBTYPE.key, "h2");
+        params.put(H2DataStoreFactory.DATABASE.key, new File(dir, "cookbook").getAbsolutePath());
+     
+        ImportContext context = importer.createContext(new Database(params), ds);
+        assertEquals(1, context.getTasks().size());
+        assertEquals(3, context.getTasks().get(0).getItems().size());
     }
 }

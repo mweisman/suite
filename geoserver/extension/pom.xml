@@ -32,6 +32,11 @@
       <artifactId>arcsde</artifactId>
       <version>${gs.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.geoserver.extension</groupId>
+      <artifactId>sqlserver</artifactId>
+      <version>${gs.version}</version>
+    </dependency>
   </dependencies>
 
   <build>

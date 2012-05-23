@@ -3,19 +3,44 @@
 Changing the projection of the viewer
 =====================================
 
-We will now change the viewer application to be in EPSG:4326 (WGS84) instead of the default Google Mercator. This will mean that our the two base layers (OSM and Google) are no longer available, so we will start by commenting them out in :file:`app.js`.  Next, we will reconfigure the map options in EPSG:4326, so remove (or comment out) the entries for ``projection``, ``units``, ``maxResolution``, ``maxExtent`` and ``center``, and add the following:
+We will now change the viewer application to be in EPSG:4326 (WGS84) instead of the default Google Mercator. This will mean that our the two base layers (OSM and Google) are no longer available, so we will start by commenting them out in :file:`app.js`:
+
+.. code-block:: javascript
+
+    layers: [{
+    //source: "osm",
+    //name: "mapnik",
+    //group: "background"
+    //}, {
+    //source: "google",
+    //name: "ROADMAP",
+    //group: "background"
+    //}, {
+        source: "local",
+        name: "usa:states",
+        selected: true
+    }],
+
+The map configuration contains a few projection related properties:
+
+.. code-block:: javascript
+
+    projection: "EPSG:900913",
+    center: [-10764594.758211, 4523072.3184791],
+
+To change the projection, substitute the lines above with the following:
 
 .. code-block:: javascript
 
     projection: "EPSG:4326",
-    center: [-97, 38]
+    center: [-97, 38],
 
-Reload the application in your browser:
+Now reload the application in your browser:
 
 .. figure:: ../img/viewer_projection_states.png
    :align: center
 
-Now we can add a WMS of the world as our new base layer, first defining a new source in the sources section:
+Now we can add a WMS of the world as our new base layer, first defining a new source in the ``sources`` section:
 
 .. code-block:: javascript
 
@@ -39,7 +64,7 @@ This will result in:
 .. figure:: ../img/viewer_projection_vmap.png
    :align: center
 
-As a last step in our layer configuration, we will add a blank base layer to the application:
+As a last step, we will add a blank base layer to the application.  Add the following to the layers configuration:
 
 .. code-block:: javascript
 

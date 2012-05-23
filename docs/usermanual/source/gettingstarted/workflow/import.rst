@@ -1,82 +1,102 @@
 .. _workflow.import:
 
-Step 2: Import Your Data
-========================
+Step 2: Import Your Data Using GeoServer
+========================================
 
-The next step is to serve your data with GeoServer.  GeoServer comes with a **Layer Importer** application to make this process easy.  The Layer Importer can import data from shapefiles, PostGIS databases, and ArcSDE/Oracle Spatial databases (with appropriate extension files installed).
+The next step is to import your data into GeoServer so it can be published.  GeoServer comes with a **Layer Importer** to make this process easy.  The Layer Importer can import data from shapefiles, PostGIS databases, and ArcSDE/Oracle Spatial databases (with appropriate extension files installed).
 
 .. note:: This example workflow uses the PostGIS data from the previous step (:ref:`workflow.load`), however, if you skipped that step, you can import shapefiles here in much the same way.
 
 #. First, make sure the OpenGeo Suite is running.  You can do this by clicking on the :guilabel:`Start` button in the :ref:`dashboard`.
 
-#. Open the GeoServer Layer Importer.  You can do this in the Dashboard by clicking :guilabel:`Import data`, next to GeoServer.  Alternately, you can click on the :guilabel:`Importer` link inside main menu on the GeoServer UI.
+#. Log in to GeoServer.  Enter your current username and password and click :guilabel:`Login`.  (The default username and password is ``admin`` and ``geoserver``.  The :ref:`dashboard.prefs` page in the Dashboard will have the most current credentials.)
 
-#. Select the type of data you wish to import.
+   .. figure:: img/import_login.png
+      :align: center
 
-   .. note:: In order to enable ArcSDE and Oracle Spatial support in the Layer Importer, external files are required from your current database installation.  For ArcSDE, the files ``jsde*.jar`` and ``jpe*.jar`` are required.  For Oracle spatial, ``ojdbc*.jar`` is required.  Copy the file(s) into ``webapps/geoserver/WEB-INF/lib`` from the root of your installation, and then restart.  If successful, you will see extra options on this page.
+      *Logging in to the GeoServer admin interface*
 
-   .. figure:: img/importer_datasource.png
+#. Open the GeoServer Layer Importer.  You can do this by click on the :guilabel:`Import Data` link on the left column of the main menu of the GeoServer UI.
+
+   .. figure:: img/import_gslink.png
+      :align: center
+
+      *Accessing the Layer Importer from the GeoServer UI*
+
+   .. note:: The Layer Importer is also available through the Dashboard by clicking on :guilabel:`Import data`, next to GeoServer. 
+
+       .. figure:: img/import_dashboard.png
+          :align: center
+
+          *Accessing the Layer Importer from the Dashboard*
+
+
+#. Select :guilabel:`PostGIS` as the type of data you wish to import.
+
+   .. note:: In order to enable ArcSDE and Oracle Spatial support in the Layer Importer, external files are required from your current database installation.  For ArcSDE, the files :file:`jsde*.jar` and :file:`jpe*.jar` are required.  For Oracle spatial, :file:`ojdbc*.jar` is required.  Copy the file(s) into :file:`webapps/geoserver/WEB-INF/lib` from the root of your installation, and then restart.  If successful, you will see extra options on this page.
+
+   .. figure:: img/import_datasource.png
       :align: center
 
       *Importing from PostGIS*
 
-#. You may be asked to log into GeoServer.  Enter your current username and password and click :guilabel:`Login`.  (The default username and password is ``admin`` and ``geoserver`` although the :ref:`dashboard.prefs` page will show the current credentials.)
+#. Fill out the form.  Assuming the steps followed in the previous section (:ref:`workflow.load`) the form should be filled out as follows:
 
-   .. figure:: img/importer_login.png
-      :align: center
-
-      *Logging in to the GeoServer admin interface*
-
-#. Fill out the form.  First select a :guilabel:`Workspace` from the list.  A workspace is the name for a group of layers, and usually signifies a project name.  You may wish to create a new workspace if you'd like, by clicking on :guilabel:`create a new workspace`.
-
-   .. warning:: The workspace name should not contain spaces.
-
-   .. figure:: img/importer_createworkspace.png
-      :align: center
-
-      *Logging in to the GeoServer admin interface*
-
-#. Select a :guilabel:`Name` for the GeoServer store.  Since this step just connects to the PostGIS database, naming this the same as your PostGIS database (by default this is your username) is a sensible default.
-
-#. Enter a description in the :guilabel:`Description` field.  This too can be whatever you'd like it to be.
-
-#. Under :guilabel:`Connection Parameters`, enter the following information:
+   .. note:: There are different form values depending on how the OpenGeo Suite was installed.
 
    .. list-table::
-      :widths: 20 80
+      :header-rows: 1
 
+      * - Field
+        - Windows/Mac
+        - Linux
+      * - **Connection Type**
+        - Default
+        - Default
       * - **Host**
         - localhost
+        - localhost
       * - **Port**
-        - 54321
+        - 54321 
+        - 5432 
       * - **Database**
-        - [your username on your host operating system]
-      * - **User name**
+        - [Username]
+        - [Username]
+      * - **Schema**
+        - public
+        - public
+      * - **Username**
         - postgres
+        - opengeo
       * - **Password**
         - [blank]
+        - opengeo
+
+#. [Optional] Select a workspace for your data.  The default workspace is :guilabel:`opengeo`.  If you wish to create a new workspace, click the :guilabel:`Add new...` link and type in a name (with no spaces).
+
+#. [Optional] Select a store for your data.  The default store is called :guilabel:`postgis`, but it is possible to select :guilabel:`Create new` in the drop-down box.
 
 #. When finished, click :guilabel:`Next`.
 
-   .. figure:: img/importer_postgisconnection.png
+   .. figure:: img/import_form.png
       :align: center
 
-      *Connection details*
+      *Filled out importer form*
 
-#. On the next screen, a list of spatial tables will be displayed.  This list should correspond to the shapefiles that you loaded in :ref:`workflow.load`.  Check all of the boxes that you would like to serve with GeoServer and click :guilabel:`Import Data`.
+#. On the next screen, a list of spatial tables found in the database will be displayed.  This list should match the number of shapefiles loaded in the previous section.  When ready to continue, click :guilabel:`Import`.
 
-   .. figure:: img/importer_selectresources.png
+  .. figure:: img/import_list.png
       :align: center
 
       *A listing of spatial layers found in the database*
 
-#. A progress bar will display, loading each table into GeoServer.  When finished, the results will be displayed.  If there were any errors, they will be described in this list with a yellow exclamation mark.  
+#. The tables will be loaded as individual layers in GeoServer.  When finished, the results will be displayed.  If there were any errors (such as problems :ref:`workflow.load.projection`), they will be described in this list.  
 
-   .. figure:: img/importer_results.png
+   .. figure:: img/import_importing.png
       :align: center
 
-      *The results of the import*
+      *The import in progress*
 
-#. You can see a preview of how each layer looks in either OpenLayers, Google Earth, or Styler, by clicking the appropriate link in the :guilabel:`Preview` column next to that layer.  If you would like to view a layer's configuration, click the :guilabel:`Name` of the layer.  If there were any problems during the import process (such as problems :ref:`workflow.load.projection`) they will be displayed in this list.
+#. You can see a preview of how each layer looks in either OpenLayers, Google Earth, or Styler, by clicking the appropriate link.  If you would like to view a layer's configuration, click the Name of the layer.
 
-Your database tables have been turned into GeoServer layers.  If you wish to import data from other sources, you may repeat this process.
+If you wish to import data from other sources, you may repeat this process.

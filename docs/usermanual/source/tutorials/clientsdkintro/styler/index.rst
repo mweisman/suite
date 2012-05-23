@@ -32,7 +32,7 @@ There will now be a new button which will show a powerful and feature-rich :guil
 
    * https://github.com/opengeo/GeoExplorer/tree/master/app/static/theme/ux/colorpicker
 
-#. Open up :file:`app/static/index.html` and add a stylesheet:
+#. Open up :file:`index.html` in your app directory and add a stylesheet:
 
    .. code-block:: html
 

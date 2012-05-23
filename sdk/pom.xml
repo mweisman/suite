@@ -102,9 +102,9 @@
                                         <include name="*.txt"/>
                                     </fileset>
                                 </copy>
-                                <chmod dir="${project.build.directory}/sdk/bin" perm="755" includes="**/*.sh"/>
-                                <!-- TODO deal with symlink -->
-                                <!-- <symlink link="${project.build.directory}/sdk/bin/suite" resource="${project.build.directory}/sdk/bin/suite.sh"/> -->
+                                <chmod perm="755">
+                                    <fileset dir="${project.build.directory}/sdk/bin"/>
+                                </chmod>
                                 <copy todir="${project.build.directory}/sdk/src/main/resources/client/src/gxp/script">
                                     <fileset dir="${gxp}/src/script"/>
                                 </copy>

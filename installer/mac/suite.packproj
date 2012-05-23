@@ -1846,12 +1846,14 @@
 							<key>Imported Options</key>
 							<dict>
 								<key>IFPkgFlagInstalledSize</key>
-								<integer>31500</integer>
+								<integer>31528</integer>
 							</dict>
 							<key>Imported Package</key>
 							<true/>
 							<key>Package Path</key>
 							<string>build/OpenGeo Suite Client SDK.pkg</string>
+							<key>Package Path Type</key>
+							<integer>2</integer>
 						</dict>
 						<key>Plugins</key>
 						<dict>
@@ -1906,14 +1908,7 @@
 							<key>Additional Resources</key>
 							<dict>
 								<key>International</key>
-								<array>
-									<dict>
-										<key>Path</key>
-										<string>build/OpenGeo Suite Client SDK.pkg/Contents/Resources/background</string>
-										<key>Status</key>
-										<true/>
-									</dict>
-								</array>
+								<array/>
 							</dict>
 							<key>Installation Scripts</key>
 							<dict>
@@ -1972,7 +1967,7 @@
 									<key>IFPkgDescriptionDeleteWarning</key>
 									<string></string>
 									<key>IFPkgDescriptionDescription</key>
-									<string></string>
+									<string>The OpenGeo Suite Client SDK provides tools for building web mapping applications backed by the OpenGeo Suite.</string>
 									<key>IFPkgDescriptionTitle</key>
 									<string>OpenGeo Suite Client SDK</string>
 									<key>IFPkgDescriptionVersion</key>
