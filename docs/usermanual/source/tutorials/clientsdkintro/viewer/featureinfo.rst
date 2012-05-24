@@ -7,12 +7,12 @@ On the file system navigate to :file:`src/app/app.js` in the :file:`myviewer` di
 
 http://suite.opengeo.org/opengeo-docs/sdk-api/lib/plugins/WMSGetFeatureInfo.html
 
-Its ``ptype`` is ``gxp_wmsgetfeatureinfo``, so we will add an entry in the tools configuration of :file:`app.js`:
+Its ``ptype`` is ``gxp_wmsgetfeatureinfo``, so we will add an entry in the ``tools`` configuration of :file:`app.js`:
 
 .. code-block:: javascript
 
     {
-        ptype: “gxp_wmsgetfeatureinfo”
+        ptype: "gxp_wmsgetfeatureinfo"
     }
 
 As the next step we need to add the new tool to our build profile, so we add a line for :file:`plugins/WMSGetFeatureInfo.js` to the list of dependencies at the top of our :file:`app.js` file. 

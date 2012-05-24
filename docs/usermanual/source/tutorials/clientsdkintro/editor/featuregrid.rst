@@ -29,13 +29,19 @@ Then go to the ``tools`` section, and add a feature grid:
         outputTarget: "south"
     }
 
-The grid will still be empty, since the feature manager only loads a feature in our current application when there is a click on the map matching a state. So go to the feature manager section in :file:`app.js`, and add ``autoLoadFeatures: true`` to the feature manager's configuration:
+The grid will still be empty, since the feature manager only loads a feature in our current application when there is a click on the map matching a state. So go to the feature manager section in :file:`app.js`, and add ``autoLoadFeatures: true`` to the feature manager's configuration (``gxp_featuremanager``):
 
 .. code-block:: javascript
 
     autoLoadFeatures: true
 
-At the top of :file:`app.js`, add :file:`plugins/FeatureGrid.js` as dependency. Restart the application and reload the browser. Now there will be a feature grid in the bottom of the application, which is initially loaded with all the states:
+At the top of :file:`app.js`, add :file:`plugins/FeatureGrid.js` as dependency:
+
+.. code-block:: javascript
+
+    * @require plugins/FeatureGrid.js
+
+Restart the application and reload the browser. Now there will be a feature grid in the bottom of the application, which is initially loaded with all the states:
 
 .. figure:: ../img/editor_featuregrid.png
    :align: center

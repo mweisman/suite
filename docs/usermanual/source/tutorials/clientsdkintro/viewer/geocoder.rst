@@ -27,7 +27,14 @@ Now open up :file:`app.js` again, and add the tool configuration for this plugin
         }
     }
 
-Add the plugin to the list of dependencies in :file:`app.js`. The file name is :file:`plugins/GoogleGeocoder.js`. Restart the application and reload the browser.  The Google geocoder will now be in our viewer:
+Add the plugin to the list of dependencies in :file:`app.js`. The file name is :file:`plugins/GoogleGeocoder.js`.
+
+.. code-block:: javascript
+
+  * @require plugins/GoogleGeocoder.js
+
+
+ Restart the application and reload the browser.  The Google geocoder will now be in our viewer:
 
 .. figure:: ../img/viewer_geocoder.png
    :align: center

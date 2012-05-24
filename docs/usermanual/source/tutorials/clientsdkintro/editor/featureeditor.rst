@@ -3,7 +3,13 @@
 Setting up a feature editor
 ===========================
 
-Unlike the feature manager, the feature editor is a visible component in the viewer. Again, open :file:`app.js` in an editor, add :file:`plugins/FeatureEditor.js` to the list of dependencies, and add the following to the ``tools`` section:
+Unlike the feature manager, the feature editor is a visible component in the viewer. Again, open :file:`app.js` in an editor and add :file:`plugins/FeatureEditor.js` to the list of dependencies.
+
+.. code-block:: javascript
+
+    * @require plugins/FeatureEditor.js
+
+Then add the following to the ``tools`` section:
 
 .. code-block:: javascript
 

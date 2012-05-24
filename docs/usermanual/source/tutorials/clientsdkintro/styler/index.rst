@@ -9,6 +9,10 @@ The Styler plugin makes it possible to edit layer styles. This uses the REST con
 
 First, we need to prepare the build profile.  Open :file:`app.js` and add :file:`plugins/Styler.js` to the list of dependencies at the top of the file. 
 
+.. code-block:: javascript
+
+    * @require plugins/SnappingAgent.js
+
 Search for the ``tools`` section, and add the Styler plugin:
 
 .. code-block:: javascript

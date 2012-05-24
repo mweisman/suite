@@ -43,7 +43,7 @@ Setting up a new project
 We will use the ``suite-sdk`` script to set up a new viewer application called
 "myviewer".
 
-.. note:: For more information on the ``suite-sdk``, please see the section on :ref:`apps.sdk.client.script`.
+.. note:: For more information on the ``suite-sdk`` script, please see the section on :ref:`apps.sdk.client.script`.
 
 Run the following command, replacing ``path/to/myviewer`` with the desired name of and path to your application::
 

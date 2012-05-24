@@ -23,7 +23,13 @@ Next search for the ``layers`` section, and add a Google base layer:
         group: "background"
     }
 
-In the build config at the top of :file:`app.js`, add a dependency line for :file:`plugins/GoogleSource.js` and restart your application.  there will now be a new base layer, Google RoadMap in our viewer:
+In the build config at the top of :file:`app.js`, add a dependency line for :file:`plugins/GoogleSource.js`.
+
+.. code-block:: javascript
+
+  * @require plugins/GoogleSource.js
+
+Finally, restart your application.  There will now be a new base layer called "Google RoadMap" in our viewer:
 
 .. figure:: ../img/viewer_google.png
    :align: center

@@ -11,7 +11,7 @@ Open up :file:`app.js` and add the following dependencies::
     * @require GeoExt/locale/GeoExt-fr.js
     * @require locale/fr.js
 
-Next, add the following in the main code block:
+Next, add the following inside the main ``Ext.onReady(function() {`` code block:
 
 .. code-block:: javascript
 

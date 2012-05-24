@@ -30,10 +30,7 @@ the OpenGeo Suite.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-# Manually apply patch3. For whatever reason %patch syntax fails on centos 6.
-pushd $RPM_SOURCE_DIR/opengeo-suite-data/data_dir/workspaces/opengeo/postgis/
-patch -s -p1 datastore.xml $RPM_SOURCE_DIR/opengeo_postgis_datastore.patch
-popd
+%patch3 -p1
   cd ../../../
 
 %install

@@ -110,14 +110,13 @@ if [ $# -gt 0 ]; then
     COMMAND=$1
     shift
     case $COMMAND in 
-        -h|--help)
-        COMMAND=help
-        ;;
+        -h|--help) COMMAND=help;;
+        --version) COMMAND=version;;
     esac
 fi
 
 case $COMMAND in
-    create|debug|deploy)
+    create|debug|deploy|version)
         # PASS
         ;;
     *)
@@ -163,6 +162,10 @@ until [ -z "$1" ]; do
         -h|--help)
             shift
             HELP=true
+            ;;
+        -*)
+            echo "$HELP_USAGE"
+            exit 1
             ;;
         *)
             break;;
@@ -224,7 +227,7 @@ esac
 LOG_FILE=~/.opengeo/logs/suite-sdk.log
 LOG_DIR=$(dirname -- "$LOG_FILE")
 
-mkdir "$LOG_DIR" &> /dev/null
+mkdir -p "$LOG_DIR" &> /dev/null
 rm "$LOG_FILE" &> /dev/null
 touch "$LOG_FILE" &> /dev/null
 

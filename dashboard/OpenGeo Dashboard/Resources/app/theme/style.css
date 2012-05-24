@@ -215,7 +215,7 @@ tr.dash-glance-component:hover  {
 } 
 
 tr.dash-glance-component ul {
-    display: none;
+/*    display: none;*/
 }
 tr.dash-glance-component:hover ul {
     display: block;

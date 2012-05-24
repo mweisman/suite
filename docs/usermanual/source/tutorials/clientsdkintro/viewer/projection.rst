@@ -48,7 +48,7 @@ Now we can add a WMS of the world as our new base layer, first defining a new so
         ptype: "gxp_olsource"
     }
 
-This type is an "OpenLayers Source", which will allow us to define any OpenLayers Layer type. We want to configure an OpenLayers.Layer.WMS to a vmap0 tilecache instance, so add the following to the layers configuration:
+This type is an "OpenLayers Source", which will allow us to define any OpenLayers Layer type. We want to configure an OpenLayers.Layer.WMS to a vmap0 tilecache instance, so add the following to the ``layers`` configuration:
 
 .. code-block:: javascript
 
@@ -64,7 +64,7 @@ This will result in:
 .. figure:: ../img/viewer_projection_vmap.png
    :align: center
 
-As a last step, we will add a blank base layer to the application.  Add the following to the layers configuration:
+As a last step, we will add a blank base layer to the application.  Add the following to the ``layers`` configuration:
 
 .. code-block:: javascript
 
