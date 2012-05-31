@@ -19,3 +19,6 @@
 [submodule "geoexplorer/externals/geoexplorer"]
 	path = geoexplorer/externals/geoexplorer
 	url = git://github.com/opengeo/GeoExplorer.git
+[submodule "geoserver/externals/geoserver-exts"]
+	path = geoserver/externals/geoserver-exts
+	url = git://github.com/opengeo/geoserver-exts.git

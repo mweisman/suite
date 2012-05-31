@@ -8,7 +8,7 @@
  <parent>
   <groupId>org.opengeo.docs</groupId>
   <artifactId>install</artifactId>
-  <version>2.5-SNAPSHOT</version>
+  <version>3.0-SNAPSHOT</version>
  </parent>
 
  <groupId>org.opengeo.docs</groupId>
@@ -26,7 +26,9 @@
             <phase>clean</phase>
             <configuration>
               <tasks>
-                <delete file="${basedir}/source/README-linux.rst"/>
+                <delete includeEmptyDirs="true">
+                  <fileset dir="${basedir}/source" includes="**/*.rst"/>
+                </delete>
               </tasks>
             </configuration>
             <goals>
@@ -38,7 +40,10 @@
             <phase>generate-sources</phase>
             <configuration>
               <tasks>
-                <copy file="${basedir}/../../usermanual/source/installation/linux/suite.rst" tofile="${basedir}/source/README-linux.rst"/>
+                <copy todir="${basedir}/source">
+                 <fileset dir="${basedir}/../../usermanual/source/installation/linux" includes="**/*.rst">
+                 </fileset>
+                </copy>
               </tasks>
             </configuration>
             <goals>

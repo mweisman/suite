@@ -3,8 +3,11 @@
    <property name="gs.dir" value="geoserver"/>
    <property name="gs.flags" value=""/>
 
+   <property name="gs-exts.dir" value="geoserver-exts"/>
+   <property name="gs-exts.flags" value=""/>
+
    <property name="gt.dir" value="geotools"/>
-   <property name="gt.version" value="2.7-SNAPSHOT"/>
+   <property name="gt.version" value="8-SNAPSHOT"/>
    <property name="gt.flags" value=""/>
 
    <property name="gwc.dir" value="geowebcache"/>
@@ -31,14 +34,13 @@
      <isset property="mvn.offline"/>
    </condition>
 
-   <!--target name="build-all" depends="checkout-all, build-gt, build-gwc, build-gs"-->
-   <target name="build-all" depends="build-gt, build-gwc, build-gs">
+   <target name="build-all" depends="build-gt, build-gwc, build-gs, build-gs-exts">
    </target>
 
    <target name="build-gt" unless="skip.gt"> 
      <antcall target="mvn">
         <param name="dir" value="${gt.dir}"/>
-        <param name="flags" value="-DskipTests -Dall ${gt.flags}"/>
+        <param name="flags" value="-DskipTests -Dall -P !geogit-versioned ${gt.flags}"/>
         <param name="targets" value="clean install"/>
      </antcall>
    </target>
@@ -64,55 +66,13 @@
      </antcall>
    </target>
 
-   <target name="checkout-all" depends="checkout-gs,checkout-gt,checkout-gwc"/>
-   <target name="checkout-gs">
-     <antcall target="checkout">
-       <param name="git.url" value="${gs.repo}"/>
-       <param name="git.branch" value="${gs.branch}"/>
-       <param name="git.rev" value="${gs.rev}"/>
-       <param name="dir" value="${gs.dir}"/>
+   <target name="build-gs-exts" unless="skip.gs-exts"> 
+     <antcall target="mvn">
+        <param name="dir" value="${gs-exts.dir}"/>
+        <param name="flags" value="-DskipTests ${gs-exts.flags}"/>
+        <param name="targets" value="clean install"/>
      </antcall>
    </target>
-   <target name="checkout-gt">
-     <antcall target="checkout">
-       <param name="git.url" value="${gt.repo}"/>
-       <param name="git.branch" value="${gt.branch}"/>
-       <param name="git.rev" value="${gt.rev}"/>
-       <param name="dir" value="${gt.dir}"/>
-     </antcall>
-   </target>
-   <target name="checkout-gwc">
-     <antcall target="checkout">
-       <param name="git.url" value="${gwc.repo}"/>
-       <param name="git.branch" value="${gwc.branch}"/>
-       <param name="git.rev" value="${gwc.rev}"/>
-       <param name="dir" value="${gwc.dir}"/>
-     </antcall>
-   </target>
-
-   <target name="checkout">
-     <echo message="Pulling ${git.branch} from ${git.url} (ignore fatal warning)"/>
-     <exec executable="git" failonerror="false">
-        <arg line="clone -b ${git.branch} ${git.url} ${dir}"/>
-     </exec>
-     <exec executable="git" dir="${dir}" failonerror="false">
-        <arg line="branch --track ${git.branch} origin/${git.branch}"/>
-     </exec>
-     <exec executable="git" dir="${dir}" failonerror="true">
-        <arg line="checkout ${git.branch}"/>
-     </exec>
-     <exec executable="git" dir="${dir}" failonerror="true">
-        <arg line="pull origin ${git.branch}"/>
-     </exec>
-     <!--antcall target="checkout-rev"/-->
-  </target>
-
-  <target name="checkout-rev">
-     <echo message="Checking out ${git.rev}"/>
-     <exec executable="git" dir="${dir}" failonerror="true">
-        <arg line="checkout ${git.rev}"/>
-     </exec>
-  </target>
 
   <target name="mvn">
      <echo message="${mvn_exec} ${mvn_settings} ${mvn_offline} ${flags} ${targets}"/>

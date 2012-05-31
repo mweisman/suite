@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.opengeo.geoserver</groupId>
     <artifactId>web</artifactId>
-    <version>2.5-SNAPSHOT</version>
+    <version>3.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.opengeo.geoserver</groupId>
@@ -66,7 +66,7 @@
     <dependency>
       <groupId>org.opengeo.geoserver</groupId>
       <artifactId>importer</artifactId>
-      <version>${project.version}</version>
+      <version>${gs.version}</version>
     </dependency>
     <dependency>
       <groupId>org.opengeo.geoserver</groupId>
@@ -130,33 +130,42 @@
       </executions>
     </plugin>
     <plugin>
-      <groupId>org.geoserver.maven</groupId>
-      <artifactId>config</artifactId>
-      <version>${gs.version}</version>
-      <executions>
-        <execution>
-          <id>configPackage</id>
-          <configuration>
-            <configDirectory>${basedir}/../../..</configDirectory>
-            <configId>data_dir</configId>
-          </configuration>
-         <phase>compile</phase>
-         <goals>
-           <goal>config</goal>
-         </goals>
-       </execution>
-       <execution>
-         <id>configClean</id>
-         <phase>clean</phase>
-         <goals>
-           <goal>clean</goal>
-         </goals>
-       </execution>
-      </executions>
-    </plugin>
-    <plugin>
-       <artifactId>maven-antrun-plugin</artifactId>
-       <executions>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>configPackage</id>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+  <!-- check if config is available, if not fail -->
+  <available file="${configDirectory}/${configId}" property="configIsAvailable" 
+/>
+  <fail message="Unable to locate configuration: ${configDirectory}/${configId}"
+ unless="configIsAvailable" />
+
+  <!-- copy the files from the config dir to the webapp dir -->
+  <echo message="Copying data dir from ${configDirectory}/${configId}" />
+  <copy todir="${webappSourceDirectory}/data">
+     <fileset dir="${configDirectory}/${configId}" includes="**/**" />
+  </copy>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>configClean</id>
+            <phase>clean</phase>
+            <configuration>
+              <tasks>
+  <delete dir="${webappSourceDirectory}/data" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
          <execution>
            <id>clean</id>
            <phase>clean</phase>
@@ -222,7 +231,7 @@
          <dependency>
            <groupId>org.opengeo.geoserver</groupId>
            <artifactId>analytics</artifactId>
-           <version>${project.version}</version>
+           <version>${gs.version}</version>
          </dependency>
        </dependencies> 
      </profile>
@@ -236,7 +245,7 @@
          <dependency>
            <groupId>org.opengeo.geoserver</groupId>
            <artifactId>analytics</artifactId>
-           <version>${project.version}</version>
+           <version>${gs.version}</version>
          </dependency>
         </dependencies> 
      </profile>
@@ -256,5 +265,8 @@
 
   <properties>
     <warSourceDirectory>${basedir}/src/main/webapp</warSourceDirectory>
+    <webappSourceDirectory>${basedir}/src/main/webapp</webappSourceDirectory>
+    <configId>data_dir</configId>
+    <configDirectory>../../..</configDirectory>
   </properties>
 </project>
