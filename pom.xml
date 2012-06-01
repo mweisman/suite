@@ -155,6 +155,7 @@
            <descriptor>assembly/mac.xml</descriptor>
            <descriptor>assembly/doc.xml</descriptor>
            <descriptor>assembly/ext.xml</descriptor>
+           <descriptor>assembly/sdk.xml</descriptor>
            <descriptor>assembly/readme.xml</descriptor>
            <descriptor>assembly/war-geoserver.xml</descriptor>
            <descriptor>assembly/war-geoexplorer.xml</descriptor>
@@ -200,6 +201,7 @@
       </activation>
      <modules>
        <module>docs</module>
+       <module>sdk</module>
        <module>recipes</module>
      </modules>
    </profile>
@@ -290,5 +292,6 @@
    <ant.version>1.6.5</ant.version>
    <dashboard.version>1.0.0</dashboard.version>
    <build.profile></build.profile>
+   <build.revision>${project.version}</build.revision>
  </properties>
 </project>

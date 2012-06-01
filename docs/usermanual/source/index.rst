@@ -11,10 +11,14 @@ The OpenGeo User Manual will help you get the most out of your OpenGeo Suite exp
 .. toctree::
    :maxdepth: 2
 
+   introduction/index
    installation/index
-   gettingstarted/index
-   analytics/index
-   tutorials/index
+   webmaps/index
+   apps/index
+   analysis/index
+   dataadmin/index
+   sysadmin/index
+   cartography/index
 
 
 

@@ -8,7 +8,6 @@ This **Getting Started** guide will guide you through the basic functionality of
 
    whatis
    dashboard
-   workflow/index
    recipes
    builtindemos
    moreinfo

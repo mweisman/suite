@@ -39,7 +39,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'OpenGeo Suite User Manual'
-copyright = u'2011 OpenGeo'
+copyright = u'OpenGeo'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
