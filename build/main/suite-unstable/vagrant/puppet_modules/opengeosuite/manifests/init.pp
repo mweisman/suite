@@ -59,7 +59,7 @@ class opengeosuite ($repo='stable') {
   
   # Install the suite
   package { 'opengeo-suite':
-    ensure  => installed
-    require Exec['update']
+    ensure  => installed,
+    require => Exec['update']
   }
 }
