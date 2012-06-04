@@ -25,7 +25,7 @@ class opengeosuite ($repo='stable') {
       if $repo == 'stable' {
         $install_repo = 'centos'
       } else {
-        $install_repo = 'centos'+$repo
+        $install_repo = "${repo}/centos"
       }
 
       # Set arch and EL version
