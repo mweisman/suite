@@ -3,11 +3,11 @@
 
 Vagrant::Config.run do |config|
   # Box name
-  config.vm.box = "og_lucid64"
+  config.vm.box = "lucid_32"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "http://localhost:8080/vagrant/lucid64.box"
+  config.vm.box_url = "http://localhost:8080/vagrant/lucid32.box"
 
 
   # Pass 8888 on the host to 8080 on the vm for testing web-based stuff
