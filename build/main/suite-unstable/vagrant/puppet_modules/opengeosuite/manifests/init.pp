@@ -14,7 +14,7 @@ class opengeosuite ($repo='stable') {
         command   => 'wget -qO- http://apt.opengeo.org/gpg.key | apt-key add -',
         path      => '/usr/bin'
       }
-      exec { 'update_apt':
+      exec { 'update':
         command  => 'apt-get update',
         path     => '/usr/bin:/bin',
         require  => File['opengeo.list']
@@ -49,11 +49,16 @@ class opengeosuite ($repo='stable') {
         path     => '/etc/yum.repos.d/OpenGeo.repo',
         content  => template('opengeosuite/OpenGeo.repo.erb')
       }
+      exec { 'update':
+        path     => '/usr/bin:/bin',
+        require  => File['OpenGeo.repo'],
+        command  => 'yum update'
     }
   }
   
   # Install the suite
   package { 'opengeo-suite':
     ensure  => installed
+    require Exec['update']
   }
 }
