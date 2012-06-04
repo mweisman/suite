@@ -8,7 +8,7 @@ class opengeosuite ($repo='stable') {
       file { 'opengeo.list':
         path     => '/etc/apt/sources.list.d/opengeo.list',
         ensure   => present, 
-        content  => template('opengeosuite/opengeo.list.erb')
+        content  => template('opengeosuite/OpenGeo.list.erb')
       }
       exec { 'install_key':
         command   => 'wget -qO- http://apt.opengeo.org/gpg.key | apt-key add -',
