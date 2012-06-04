@@ -12,8 +12,7 @@ fi
 
 if [[ -z $2 ]]; then
     echo "ERROR: Missing repo name"
-    echo "usage:
-    echo "run_box.sh <box> <repo>"
+    echo "usage: run_box.sh <box> <repo>"
     exit 1
 else
     REPO=$2
