@@ -23,6 +23,6 @@ apply_file="class {'opengeosuite':\
 }"
 
 cd $BOX_NAME
-echo $apply_file > manifests/apply.pp
+echo $apply_file > apply.pp
 echo "Building ${REPO} on ${BOX_NAME}"
 vagrant up
