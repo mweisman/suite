@@ -53,8 +53,9 @@ class opengeosuite ($repo='stable') {
         path     => '/usr/bin:/bin',
         require  => File['OpenGeo.repo'],
         command  => 'yum update'
-    }
-  }
+      }
+   }
+ }
   
   # Install the suite
   package { 'opengeo-suite':
