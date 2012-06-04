@@ -3,18 +3,18 @@
 
 Vagrant::Config.run do |config|
   # Box name
-  config.vm.box = "og_lucid64"
+  config.vm.box = "centos6_64"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "http://localhost:8080/vagrant/lucid64.box"
+  config.vm.box_url = "http://localhost:8080/vagrant/centos6_64.box"
 
 
   # Pass 8888 on the host to 8080 on the vm for testing web-based stuff
   config.vm.forward_port(8080, 8888)
   # Pass PostgreSQL requests to the host into the vm for testing the db
   config.vm.forward_port(5432, 5432)
-  
+
   # Run a puppet script to install the suite
   config.vm.provision :puppet do |puppet|
     puppet.module_path = "../puppet_modules"

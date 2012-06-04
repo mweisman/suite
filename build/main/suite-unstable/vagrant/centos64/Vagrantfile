@@ -7,22 +7,18 @@ Vagrant::Config.run do |config|
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  # config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
+  config.vm.box_url = "http://localhost:8080/vagrant/centos5_64.box"
 
 
   # Pass 8888 on the host to 8080 on the vm for testing web-based stuff
   config.vm.forward_port(8080, 8888)
   # Pass PostgreSQL requests to the host into the vm for testing the db
   config.vm.forward_port(5432, 5432)
-  
-  # Run a script at boot to setup OpenGeo repos and install the nightly build.
-  # The repo used can be configured by setting the REPO environment variable. The default
-  # repo (if REPO is unset) is test.
 
-  repo = ENV['REPO']
-  if not repo
-    config.vm.provision :shell, :path => "setup.sh", :args => "test"
-  else
-    config.vm.provision :shell, :path => "setup.sh", :args => repo
+  # Run a puppet script to install the suite
+  config.vm.provision :puppet do |puppet|
+    puppet.module_path = "../puppet_modules"
+    puppet.manifests_path = "."
+    puppet.manifest_file = "apply.pp"
   end
 end
