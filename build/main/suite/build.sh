@@ -20,7 +20,7 @@ function profile_rebuild {
   checkrv $? "maven clean install dashboard ($profile profile)"
   popd
 
-  $MVN -s $MVN_SETTINGS -P $profile -o assembly:attached -Dbuild.revision=$revision
+  $MVN -s $MVN_SETTINGS -P $profile -o assembly:attached -Dbuild.revision=$revision -Dbuild.date=$BUILD_ID -Dbuild.profile=$profile
   checkrv $? "maven assembly ($profile profile)"
 }
 
