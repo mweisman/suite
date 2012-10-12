@@ -12,6 +12,7 @@
 # serve to show the default value.
 
 import sys, os
+from xml.dom import minidom
 
 # If your extensions are in another directory, add it here. If the directory
 # is relative to the documentation root, use os.path.abspath to make it
@@ -44,10 +45,14 @@ copyright = u'2011 OpenGeo'
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
 #
+# Find gwc version from pom.xml
+pom_path = os.getenv("WORKSPACE") + "/repo/pom.xml"
+pom = minidom.parse(pom_path)
+gwc_ver = pom.getElementsByTagName('gwc.version')[0].firstChild.nodeValue
 # The short X.Y version.
-version = '1.3'
+version = gwc_ver.split("-")[0]
 # The full version, including alpha/beta/rc tags.
-release = '1.3'
+release = gwc_ver
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
