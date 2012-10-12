@@ -148,7 +148,7 @@
 
   <!-- copy the files from the config dir to the webapp dir -->
   <echo message="Copying data dir from ${configDirectory}/${configId}" />
-  <copy todir="${webappSourceDirectory}/data">
+  <copy todir="${webappSourceDirectory}/data" overwrite="true">
      <fileset dir="${configDirectory}/${configId}" includes="**/**"/>
   </copy>
               </tasks>
