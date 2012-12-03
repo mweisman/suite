@@ -167,6 +167,7 @@
            <descriptor>assembly/dashboard-osx.xml</descriptor>
            <descriptor>assembly/data-dir.xml</descriptor>
            <descriptor>assembly/pgadmin-postgis.xml</descriptor>
+           <descriptor>assembly/geoexplorer-static.xml</descriptor>
          </descriptors>
        </configuration>
      </plugin>
