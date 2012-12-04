@@ -7,9 +7,6 @@
     <fileSet>
       <directory>geoexplorer/target/geoexplorer/WEB-INF/app/static</directory>
       <outputDirectory>/</outputDirectory>
-      <includes>
-        <include>*</include>
-      </includes>
     </fileSet>
   </fileSets>
 </assembly>
