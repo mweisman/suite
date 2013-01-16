@@ -1,0 +1,20 @@
+<assembly>
+  <id>importer</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>assembly/target/dependency</directory>
+      <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>importer-*.jar</include>
+        <include>commons-logging-*.jar</include>
+        <include>commons-io-*.jar</include>
+        <include>commons-vfs-*.jar</include>
+        <include>compress-lzf-*.jar</include>
+        <include>prettytime-*.jar</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+</assembly>

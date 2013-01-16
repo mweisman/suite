@@ -78,11 +78,6 @@
     <!-- opengeo specific stuff -->
     <dependency>
       <groupId>org.opengeo.geoserver</groupId>
-      <artifactId>importer</artifactId>
-      <version>${gs.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.opengeo.geoserver</groupId>
       <artifactId>web-wps</artifactId>
       <version>${gs.version}</version>
     </dependency>

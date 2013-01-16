@@ -32,6 +32,11 @@
      <artifactId>jdbcconfig</artifactId>
      <version>${gs.version}</version>
    </dependency>
+   <dependency>
+     <groupId>org.opengeo.geoserver</groupId>
+     <artifactId>importer</artifactId>
+     <version>${gs.version}</version>
+   </dependency>
  </dependencies>
  <build>
    <plugins>
