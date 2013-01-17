@@ -9,7 +9,6 @@
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>importer-*.jar</include>
-        <include>commons-logging-*.jar</include>
         <include>commons-io-*.jar</include>
         <include>commons-vfs-*.jar</include>
         <include>compress-lzf-*.jar</include>
